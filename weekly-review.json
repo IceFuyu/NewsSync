@@ -1,0 +1,13 @@
+{
+  "summary": "Die KI-Woche war geprägt von einem Wettlauf um Infrastruktur-Unabhängigkeit und staatliche Partnerschaften. OpenAI rollte GPT-5.6 erstmals unter Regierungsaufsicht aus, während Anthropic mit Claude Sonnet 5 ein starkes Mittelklasse-Modell lancierte und gleichzeitig Verhandlungen über einen eigenen Chip mit Samsung aufnahm. Meta und Microsoft setzten mit milliardenschweren Expansionsplänen neue Maßstäbe im Infrastruktur- und Deployment-Bereich. Parallel dazu warnen UN-Experten, dass das Zeitfenster für globale KI-Regulierung sich schließt.",
+  "highlights": [
+    "OpenAI führt mit GPT-5.6 (Sol, Terra, Luna) erstmals ein Frontier-Modell unter staatlich koordinierter Aufsicht ein – ein Präzedenzfall für regulierte KI-Freigaben.",
+    "Anthropic dominiert die Woche mit drei gleichzeitigen Entwicklungen: neuem Standardmodell Claude Sonnet 5, einem Chip-Deal mit Samsung und einer Partnerschaft mit Kalifornien für alle Behörden.",
+    "Meta plant mit 'Meta Compute' den Einstieg ins Cloud-Geschäft und tritt damit in direkte Konkurrenz zu AWS, Azure und Google Cloud.",
+    "Microsoft verpflichtet sich mit 2,5 Mrd. Dollar und 6.000 eingebetteten Ingenieuren zur bisher größten Forward-Deployed-Engineering-Initiative der Branche.",
+    "Anthropics Forschungsdurchbruch steigert KI-Genauigkeit bei biologischen Aufgaben von 16,9 % auf 92,8 % – ein potenzieller Wendepunkt für KI in der Arzneimittelforschung."
+  ],
+  "trend": "Vertikale Integration: Die großen KI-Labs streben gleichzeitig nach eigener Chip-Hardware, staatlichen Großverträgen und Cloud-Infrastruktur – der Wettbewerb verlagert sich von reinen Modell-Benchmarks hin zur Kontrolle der gesamten KI-Wertschöpfungskette.",
+  "watch": "Der UN Global Dialogue on AI Governance, der am 6. Juli 2026 in Genf beginnt, wird zeigen, ob internationale Regulierungsansätze angesichts der rasanten nationalen und unternehmerischen Alleingänge noch Durchsetzungskraft besitzen.",
+  "generatedAt": "2026-07-04T20:27:49.335Z"
+}
