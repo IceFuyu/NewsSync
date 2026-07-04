@@ -1,0 +1,35 @@
+name: Update News
+
+on:
+  schedule:
+    # 06:00 und 18:00 UTC
+    - cron: "0 6,18 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate news
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/generate-news.js
+
+      - name: Commit updated data
+        run: |
+          git config user.name "signal-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add news.json archive.json weekly-review.json
+          git diff --cached --quiet || git commit -m "Update news data"
+          git push

@@ -1,0 +1,10 @@
+{
+  "name": "signal-ai-intelligence",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Signal – privates KI-News-Dashboard. Statische Seite, News werden per GitHub Actions Cron aktualisiert.",
+  "scripts": {
+    "generate-news": "node scripts/generate-news.js"
+  }
+}

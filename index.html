@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Signal — AI Intelligence</title>
+<style>
+  :root{
+    --bg:#0a0a0c;
+    --panel:rgba(22,22,26,.6);
+    --panel-solid:#141417;
+    --border:rgba(255,255,255,.08);
+    --lime:#d2ff00;
+    --lime-dim:rgba(210,255,0,.16);
+    --text:#f5f5f7;
+    --text-dim:rgba(245,245,247,.62);
+    --text-faint:rgba(245,245,247,.38);
+    --mono: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, sans-serif;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--sans);height:100%;}
+  body{min-height:100vh;overflow-x:hidden;}
+  ::selection{background:var(--lime);color:#0a0a0c;}
+  a{color:var(--lime);text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+
+  #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  #bg-canvas canvas{display:block;width:100%;height:100%;}
+
+  /* ---------- INTRO ---------- */
+  #intro{
+    position:fixed;inset:0;z-index:100;
+    background:var(--bg);
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    transition:opacity .6s ease, filter .6s ease, transform .6s ease;
+  }
+  #intro.exiting{opacity:0;filter:blur(20px);transform:scale(1.08);pointer-events:none;}
+  #intro-skip{
+    position:absolute;top:20px;right:20px;z-index:5;
+    background:transparent;border:1px solid var(--border);color:var(--text-dim);
+    padding:8px 16px;border-radius:100px;font-size:13px;letter-spacing:.02em;
+  }
+  #intro-skip:hover{border-color:var(--lime);color:var(--lime);}
+  #slides-track{
+    flex:1;display:flex;height:100%;width:300%;
+    transition:transform .5s cubic-bezier(.16,1,.3,1);
+    touch-action:pan-y;
+    will-change:transform;
+  }
+  #slides-track.dragging{transition:none;}
+  .slide{
+    width:calc(100% / 3);height:100%;flex-shrink:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:0 24px;user-select:none;
+  }
+  .slide h1{
+    font-size:clamp(38px,9vw,96px);font-weight:800;text-transform:uppercase;
+    letter-spacing:-.03em;line-height:1.02;margin:0 0 20px;
+  }
+  .slide .outline{
+    -webkit-text-stroke:2px var(--lime);color:transparent;
+  }
+  .slide p{
+    font-size:clamp(15px,2.2vw,20px);color:var(--text-dim);max-width:560px;margin:0 0 32px;
+  }
+  .lime-btn{
+    background:var(--lime);color:#0a0a0c;border:none;font-weight:700;
+    padding:15px 34px;border-radius:100px;font-size:15px;letter-spacing:.02em;
+    box-shadow:0 0 40px rgba(210,255,0,.35);
+  }
+  .lime-btn:hover{transform:translateY(-1px);box-shadow:0 0 55px rgba(210,255,0,.5);}
+  #intro-progress{
+    position:absolute;bottom:64px;left:50%;transform:translateX(-50%);
+    display:flex;gap:8px;
+  }
+  #intro-progress .dash{width:32px;height:3px;background:var(--border);border-radius:2px;transition:background .3s;}
+  #intro-progress .dash.active{background:var(--lime);}
+  #intro-hint{
+    position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+    font-family:var(--mono);font-size:12px;color:var(--text-faint);
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:.35;}50%{opacity:1;}}
+
+  /* ---------- APP SHELL ---------- */
+  #app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:0 20px 80px;}
+  #app[hidden]{display:none;}
+  header{
+    position:sticky;top:0;z-index:20;
+    background:rgba(10,10,12,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid var(--border);
+    margin:0 -20px;padding:16px 20px 0;
+  }
+  .header-row{display:flex;justify-content:space-between;align-items:baseline;}
+  .brand{font-weight:800;font-size:18px;letter-spacing:-.01em;}
+  .brand small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--lime);font-weight:600;margin-top:2px;}
+  .header-date{font-family:var(--mono);font-size:12px;color:var(--text-dim);}
+  nav.tabs{display:flex;gap:26px;margin-top:16px;}
+  nav.tabs button{
+    background:none;border:none;color:var(--text-dim);font-size:14px;font-weight:600;
+    padding:10px 0 12px;border-bottom:2px solid transparent;
+  }
+  nav.tabs button.active{color:var(--lime);border-bottom-color:var(--lime);}
+  nav.tabs button:hover{color:var(--text);}
+
+  main{padding-top:24px;min-height:60vh;}
+  .tab-panel{display:none;animation:fadein .35s ease;}
+  .tab-panel.active{display:block;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* filter chips */
+  .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .chip{
+    background:var(--panel);border:1px solid var(--border);color:var(--text-dim);
+    padding:7px 14px;border-radius:100px;font-size:13px;font-weight:600;
+    backdrop-filter:blur(10px);
+  }
+  .chip.active{background:var(--lime-dim);border-color:var(--lime);color:var(--lime);}
+  .chip:hover{border-color:rgba(255,255,255,.2);}
+
+  .refresh-pill{
+    display:inline-flex;align-items:center;gap:6px;background:var(--panel);
+    border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:100px;
+    font-size:13px;font-weight:600;margin-bottom:18px;
+  }
+  .refresh-pill:hover{border-color:var(--lime);color:var(--lime);}
+  .refresh-pill.spinning svg{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* cards */
+  .card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px;margin-bottom:14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    transition:border-color .2s,transform .2s;cursor:pointer;
+    animation:cardin .4s ease backwards;
+  }
+  @keyframes cardin{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+  .card:hover{border-color:rgba(210,255,0,.45);transform:translateY(-2px);box-shadow:0 0 0 1px rgba(210,255,0,.08),0 8px 30px rgba(0,0,0,.35);}
+  .post-top{display:flex;gap:12px;align-items:flex-start;}
+  .avatar{
+    width:42px;height:42px;border-radius:11px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:#0a0a0c;font-size:16px;
+  }
+  .post-meta-line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:4px;}
+  .post-company{font-weight:700;font-size:14px;}
+  .badge{
+    background:var(--lime-dim);color:var(--lime);font-size:10.5px;font-weight:700;
+    padding:3px 9px;border-radius:100px;letter-spacing:.03em;text-transform:uppercase;
+  }
+  .post-source{font-family:var(--mono);font-size:11px;color:var(--text-faint);}
+  .post-headline{font-size:16.5px;font-weight:700;margin:6px 0 6px;line-height:1.35;}
+  .post-why{font-size:14px;color:var(--text-dim);line-height:1.55;margin:0 0 10px;}
+  .post-media{width:100%;border-radius:10px;overflow:hidden;margin-bottom:10px;aspect-ratio:16/9;background:#111;}
+  .post-media img{width:100%;height:100%;object-fit:cover;display:block;}
+  .post-media-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;color:rgba(0,0,0,.35);}
+  .hashtags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+  .hashtag{font-family:var(--mono);font-size:11px;color:var(--lime);opacity:.85;}
+  .hover-hint{font-size:12px;color:var(--text-faint);opacity:0;transition:opacity .2s;}
+  .card:hover .hover-hint{opacity:1;}
+
+  .compact-post{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+  .compact-post:hover .post-headline{color:var(--lime);}
+  .compact-post:last-child{border-bottom:none;}
+
+  /* skeleton */
+  .skeleton{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+  .shimmer{background:linear-gradient(90deg, rgba(255,255,255,.05) 25%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.05) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;}
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  .sk-line{height:12px;margin-bottom:8px;}
+  .sk-line.w60{width:60%;}
+  .sk-line.w90{width:90%;}
+  .sk-media{height:160px;border-radius:10px;margin-bottom:10px;}
+
+  .error-box{background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.3);border-radius:var(--radius);padding:20px;text-align:center;}
+  .error-box p{color:var(--text-dim);margin:0 0 14px;}
+  .empty-box{background:var(--panel);border:1px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;color:var(--text-dim);font-size:14px;}
+
+  h2.section-title{font-size:22px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px;}
+  p.section-sub{color:var(--text-dim);font-size:14px;margin:0 0 20px;}
+
+  /* Einstieg */
+  .einstieg-block{margin-bottom:36px;}
+  .einstieg-hint{background:var(--lime-dim);border:1px solid rgba(210,255,0,.35);border-radius:var(--radius);padding:16px 18px;font-size:14px;color:var(--text);margin-bottom:26px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .num-badge{
+    width:26px;height:26px;border-radius:8px;background:var(--lime);color:#0a0a0c;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;
+  }
+  .simple-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .2s,transform .2s;}
+  .simple-card:hover{border-color:rgba(210,255,0,.45);transform:translateY(-2px);}
+  .simple-card h3{font-size:15px;margin:0 0 6px;font-weight:700;}
+  .simple-card p{font-size:13px;color:var(--text-dim);margin:0;line-height:1.5;}
+  .simple-card .row{display:flex;gap:10px;align-items:flex-start;}
+
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+  .glossary-chip{
+    background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:14px;cursor:pointer;
+    transition:border-color .2s,transform .2s;
+  }
+  .glossary-chip:hover{border-color:var(--lime);transform:translateY(-2px);}
+  .glossary-chip strong{font-size:14px;}
+
+  /* Modelle */
+  .model-card{display:flex;gap:12px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .2s,transform .2s;}
+  .model-card:hover{border-color:rgba(210,255,0,.45);transform:translateY(-2px);}
+  .model-card h3{margin:0;font-size:15px;}
+  .model-card .dev{font-size:11.5px;color:var(--text-faint);font-family:var(--mono);margin-bottom:6px;}
+  .model-card p{font-size:13px;color:var(--text-dim);margin:0 0 8px;line-height:1.45;}
+  .usecase-chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .usecase-chip{font-size:10.5px;background:rgba(255,255,255,.06);color:var(--text-dim);padding:3px 8px;border-radius:100px;}
+
+  /* Archive */
+  .day-group{margin-bottom:22px;}
+  .day-header{font-family:var(--mono);font-size:12.5px;color:var(--lime);margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+
+  /* Sheet */
+  #sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;}
+  #sheet-backdrop.open{opacity:1;pointer-events:auto;}
+  #sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:201;max-height:88vh;
+    background:var(--panel-solid);border-top:1px solid var(--border);border-radius:22px 22px 0 0;
+    transform:translateY(100%);transition:transform .38s cubic-bezier(.16,1,.3,1);
+    overflow-y:auto;padding:22px 24px 40px;max-width:920px;margin:0 auto;
+  }
+  #sheet.open{transform:translateY(0);}
+  #sheet-close{
+    position:sticky;top:0;float:right;background:rgba(255,255,255,.06);border:none;color:var(--text);
+    width:32px;height:32px;border-radius:50%;font-size:16px;margin-bottom:10px;
+  }
+  #sheet-close:hover{background:rgba(210,255,0,.2);color:var(--lime);}
+  #sheet-content{clear:both;}
+  #sheet-content h4.kicker{color:var(--lime);font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:20px 0 8px;}
+  #sheet-content h4.kicker:first-child{margin-top:0;}
+  #sheet-content h2{font-size:22px;margin:0 0 12px;}
+  #sheet-content p{font-size:14.5px;line-height:1.65;color:var(--text-dim);margin:0 0 10px;}
+  #sheet-content ul{margin:0 0 10px;padding-left:20px;color:var(--text-dim);font-size:14.5px;line-height:1.6;}
+  #sheet-content .merksatz{background:var(--lime-dim);border-left:3px solid var(--lime);padding:12px 14px;border-radius:8px;font-size:14px;color:var(--text);margin:14px 0;}
+  #sheet-content .chip-mini{display:inline-block;font-size:11px;background:rgba(255,255,255,.07);color:var(--text-dim);padding:3px 9px;border-radius:100px;margin:0 6px 6px 0;}
+  .spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--lime);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:10px;}
+  .sheet-loading{display:flex;align-items:center;color:var(--text-dim);font-size:14px;padding:30px 0;}
+  .sheet-media{width:100%;border-radius:12px;overflow:hidden;margin-bottom:16px;aspect-ratio:16/9;background:#111;}
+  .sheet-media img{width:100%;height:100%;object-fit:cover;}
+
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-faint);line-height:1.6;}
+
+  @media (max-width:640px){
+    .grid{grid-template-columns:1fr;}
+    #app{padding:0 14px 80px;}
+    header{margin:0 -14px;padding:14px 14px 0;}
+    nav.tabs{gap:18px;overflow-x:auto;}
+    .model-card{flex-direction:column;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<div id="bg-canvas"></div>
+
+<div id="intro">
+  <button id="intro-skip">Überspringen</button>
+  <div id="slides-track">
+    <div class="slide">
+      <h1>Signal<br><span class="outline">AI Intelligence</span></h1>
+      <p>Dein privates KI-Dashboard — ohne Social Media täglich im Bild.</p>
+    </div>
+    <div class="slide">
+      <h1><span class="outline">Klarheit</span> statt Rauschen</h1>
+      <p>Kurze Posts für den Überblick, ein Klick öffnet die Tiefenanalyse.</p>
+    </div>
+    <div class="slide">
+      <h1>Los geht's</h1>
+      <p>Drei Minuten, und du bist im Bild.</p>
+      <button class="lime-btn" id="intro-start">Los geht's →</button>
+    </div>
+  </div>
+  <div id="intro-progress">
+    <div class="dash active"></div><div class="dash"></div><div class="dash"></div>
+  </div>
+  <div id="intro-hint">← Wischen oder ziehen →</div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <div class="header-row">
+      <div class="brand">Signal<small>AI INTELLIGENCE</small></div>
+      <div class="header-date" id="header-date"></div>
+    </div>
+    <nav class="tabs">
+      <button data-tab="feed" class="active">Feed</button>
+      <button data-tab="einstieg">Einstieg</button>
+      <button data-tab="archiv">Archiv</button>
+      <button data-tab="modelle">Modelle</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- FEED -->
+    <section class="tab-panel active" id="tab-feed">
+      <button class="refresh-pill" id="feed-refresh">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg>
+        Feed aktualisieren
+      </button>
+      <div class="chip-row" id="feed-filters">
+        <button class="chip active" data-filter="Alle">Alle</button>
+        <button class="chip" data-filter="Modelle & Tools">Modelle &amp; Tools</button>
+        <button class="chip" data-filter="Business">Business</button>
+        <button class="chip" data-filter="Forschung">Forschung</button>
+        <button class="chip" data-filter="Politik">Politik</button>
+      </div>
+      <div id="feed-list"></div>
+    </section>
+
+    <!-- EINSTIEG -->
+    <section class="tab-panel" id="tab-einstieg">
+      <div class="einstieg-hint">Ganz neu beim Thema? Lies die 6 Karten der Reihe nach — danach verstehst du jede Meldung im Feed.</div>
+      <div class="einstieg-block">
+        <h2 class="section-title">KI in 5 Minuten</h2>
+        <p class="section-sub">Die Grundlagen, der Reihe nach.</p>
+        <div id="einstieg-grundlagen"></div>
+      </div>
+      <div class="einstieg-block">
+        <h2 class="section-title">Erste Schritte</h2>
+        <p class="section-sub">Praktisch loslegen.</p>
+        <div class="grid" id="einstieg-schritte"></div>
+      </div>
+      <div class="einstieg-block">
+        <h2 class="section-title">Begriffe, die dir überall begegnen</h2>
+        <p class="section-sub">Kurzes Glossar zum Nachschlagen.</p>
+        <div class="glossary-grid" id="einstieg-glossar"></div>
+      </div>
+      <p style="font-size:12px;color:var(--text-faint);">Kuratierte Grundlagen — Stand beim Erstellen der Seite.</p>
+    </section>
+
+    <!-- ARCHIV -->
+    <section class="tab-panel" id="tab-archiv">
+      <button class="refresh-pill" id="weekly-review-btn" style="background:var(--lime-dim);border-color:var(--lime);color:var(--lime);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19h16M4 15l4-4 4 4 6-8"/></svg>
+        Wochenrückblick erstellen
+      </button>
+      <div id="archive-list"></div>
+    </section>
+
+    <!-- MODELLE -->
+    <section class="tab-panel" id="tab-modelle">
+      <div class="chip-row" id="model-filters">
+        <button class="chip active" data-filter="Alle">Alle</button>
+        <button class="chip" data-filter="Text">Text</button>
+        <button class="chip" data-filter="Open Source">Open Source</button>
+        <button class="chip" data-filter="Bild">Bild</button>
+        <button class="chip" data-filter="Video">Video</button>
+        <button class="chip" data-filter="Audio">Audio</button>
+      </div>
+      <div class="grid" id="model-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    Signal ist ein privater Prototyp. Inhalte werden automatisch recherchiert und von Claude erzeugt und mehrmals täglich aktualisiert — Wichtiges bitte an der Originalquelle prüfen.
+  </footer>
+</div>
+
+<div id="sheet-backdrop"></div>
+<div id="sheet">
+  <button id="sheet-close">✕</button>
+  <div id="sheet-content"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="window.__THREE_FAILED__=true"></script>
+<script>
+/* ============================================================
+   DATA: Einstieg (statisch, versionsneutral)
+   ============================================================ */
+const GRUNDLAGEN = [
+  {
+    title:"Was ist ein Sprachmodell?",
+    teaser:"Kein Roboter, kein Bewusstsein — eine extrem gut trainierte Text-Vorhersage.",
+    paragraphs:[
+      "Ein Sprachmodell ist ein Computerprogramm, das aus riesigen Mengen Text gelernt hat, wie Sprache normalerweise verwendet wird. Es hat Bücher, Webseiten und Artikel „gelesen” — nicht wie ein Mensch, sondern als Muster aus Millionen Beispielen.",
+      "Stell es dir vor wie eine extrem belesene Autovervollständigung auf deinem Handy: Du tippst ein paar Worte, und sie schlägt vor, wie der Satz weitergehen könnte. Ein modernes Sprachmodell macht genau das — nur unglaublich viel besser, auf ganze Absätze und komplexe Aufgaben bezogen.",
+      "Wenn du eine Frage stellst, „weiß” das Modell die Antwort nicht wie ein Mensch, der sich erinnert. Es berechnet, welche Abfolge von Wörtern statistisch am besten zu deiner Frage passt — basierend auf allem, was es beim Training gesehen hat.",
+      "Diese einfache Grundidee — das nächste Wort vorhersagen — führt, wenn man sie groß genug skaliert, zu erstaunlich klugen Ergebnissen: Übersetzen, Programmieren, Zusammenfassen, sogar Argumentieren."
+    ],
+    merksatz:"Ein Sprachmodell schreibt, was statistisch gut passt — nicht was es „weiß” im menschlichen Sinn."
+  },
+  {
+    title:"Wie „denkt” ein Sprachmodell grob?",
+    teaser:"Wahrscheinlichkeiten statt Bewusstsein.",
+    paragraphs:[
+      "Im Kern macht ein Sprachmodell bei jedem einzelnen Wort dieselbe Rechnung: Welches Wort (oder Wortstück, „Token” genannt) kommt als Nächstes am wahrscheinlichsten? Diese Berechnung wiederholt es Token für Token, bis eine ganze Antwort entstanden ist.",
+      "Damit das funktioniert, hat das Modell während des Trainings Milliarden von Textbeispielen gesehen und daraus Muster über Grammatik, Fakten, Zusammenhänge und Stil abgeleitet — gespeichert in Milliarden von Zahlenwerten, den sogenannten „Parametern”.",
+      "Neuere Modelle können zusätzlich „nachdenken”, bevor sie antworten: Sie erzeugen intern zunächst Zwischenschritte („Reasoning”), um bei komplexen Aufgaben zu besseren Ergebnissen zu kommen — ähnlich wie ein Mensch, der eine Rechnung auf einem Schmierzettel vorbereitet.",
+      "Wichtig zu verstehen: Es gibt dabei kein Bewusstsein, keine Gefühle und keine Absicht. Es ist Mustererkennung und -erzeugung in sehr großem Maßstab."
+    ],
+    merksatz:"Kein Denken wie ein Mensch — sondern extrem leistungsfähige Mustererkennung, Wort für Wort."
+  },
+  {
+    title:"Was kann KI wirklich gut?",
+    teaser:"Sprache, Muster und Geschwindigkeit sind die großen Stärken.",
+    paragraphs:[
+      "Text verstehen, zusammenfassen, übersetzen und formulieren gehört zu den größten Stärken: Ein langes Dokument in Sekunden auf den Punkt bringen, einen holprigen Entwurf glätten, zwischen Sprachen wechseln.",
+      "Auch Programmieren gehört heute klar dazu — Code schreiben, erklären, debuggen und in bestehende Projekte einfügen, oft schneller als ein Mensch es alleine könnte.",
+      "Kreative Vorarbeit ist eine weitere Stärke: Ideen sammeln, Varianten eines Textes durchspielen, Brainstorming, Strukturvorschläge — als schneller erster Entwurf, nicht als fertiges Endprodukt.",
+      "Und: Große Mengen Information ordnen und durchsuchen — etwa aus vielen Dokumenten die relevanten Stellen herausfiltern — geht mit KI oft in einem Bruchteil der Zeit."
+    ],
+    merksatz:"KI ist ein starker erster Entwurf und ein schneller Assistent — kein unfehlbares Orakel."
+  },
+  {
+    title:"Wo scheitert KI?",
+    teaser:"Halluzinationen, Aktualität und Rechnen sind die klassischen Schwachstellen.",
+    paragraphs:[
+      "Halluzinationen: Sprachmodelle erfinden manchmal Fakten, Zitate oder Quellen, die überzeugend klingen, aber schlicht falsch sind — weil sie Text erzeugen, der plausibel wirkt, nicht weil sie eine Datenbank abfragen.",
+      "Aktualität: Ohne Websuche kennt ein Modell nur, was bis zu einem bestimmten Zeitpunkt Teil seines Trainings war. Was danach passiert ist, weiß es schlicht nicht — es sei denn, es darf im Internet nachschauen.",
+      "Rechnen und Logik-Fallstricke: Bei einfachen Textaufgaben überzeugend, bei mehrstufigen Rechnungen oder sehr genauen Zahlenoperationen passieren trotzdem Fehler, gerade wenn niemand nachrechnet.",
+      "Deshalb gilt: Je wichtiger die Antwort, desto mehr lohnt sich ein kurzer Realitätscheck an einer zweiten Quelle."
+    ],
+    merksatz:"Wichtiges immer gegenprüfen — KI klingt auch dann selbstsicher, wenn sie falsch liegt."
+  },
+  {
+    title:"Warum redet gerade alle darüber?",
+    teaser:"Ein Sprung in Leistungsfähigkeit trifft auf einfache Bedienbarkeit.",
+    paragraphs:[
+      "Sprachmodelle sind in den letzten Jahren sprunghaft besser geworden — größere Trainingsdaten, mehr Rechenleistung und bessere Trainingsmethoden haben zusammen einen Qualitätssprung ausgelöst, den viele Menschen direkt spüren.",
+      "Gleichzeitig wurde der Zugang denkbar einfach: Ein Chatfenster, eine Frage in normaler Sprache — keine Programmierkenntnisse, keine Installation nötig. Das hat die Technologie aus Forschungslaboren direkt in den Alltag von Millionen Menschen gebracht.",
+      "Dazu kommt ein wirtschaftliches Wettrennen: Große Techkonzerne und gut finanzierte Start-ups investieren enorme Summen, weil sie glauben, dass KI viele Branchen verändern wird — das erzeugt ständig neue Schlagzeilen.",
+      "Und schließlich betrifft es fast jeden Beruf und jeden Alltag irgendwie — Schreiben, Programmieren, Bilder, Musik, Kundenservice — daher die breite, anhaltende Aufmerksamkeit."
+    ],
+    merksatz:"Ein echter Leistungssprung plus denkbar einfache Bedienung — deshalb ist es überall Thema."
+  },
+  {
+    title:"Wie geht man verantwortungsvoll damit um?",
+    teaser:"Ein paar einfache Grundregeln reichen für den Alltag.",
+    paragraphs:[
+      "Nichts wirklich Sensibles teilen: Passwörter, Gesundheitsdaten, interne Firmengeheimnisse oder fremde personenbezogene Daten gehören nicht in einen Chat, dessen Verarbeitung du nicht vollständig überblickst.",
+      "Wichtiges immer prüfen: Bei Fakten, Zahlen, Rechtsfragen oder medizinischen Themen die Antwort als Ausgangspunkt behandeln, nicht als letzte Wahrheit — und an einer verlässlichen Quelle gegenchecken.",
+      "Transparent bleiben: Wenn KI-Inhalte weiterverwendet werden (Text, Bild, Code), ist es in vielen Kontexten fair und teils auch nötig, das kenntlich zu machen.",
+      "Kritisch bleiben statt blind vertrauen: KI ist ein Werkzeug, das die eigene Urteilskraft ergänzt — nicht ersetzt."
+    ],
+    merksatz:"Nichts Sensibles teilen, Wichtiges immer prüfen — dann ist der Alltag mit KI unkompliziert."
+  }
+];
+
+const ERSTE_SCHRITTE = [
+  {
+    title:"Welches Tool zum Starten?",
+    teaser:"Es gibt nicht „das eine richtige” — schau dir die Übersicht im Modelle-Tab an.",
+    paragraphs:[
+      "Für den täglichen Einstieg reicht ein einziges gutes Textmodell völlig aus — im Modelle-Tab findest du eine kuratierte Übersicht der bekanntesten Anbieter mit Stärken, Schwächen und typischen Einsatzzwecken.",
+      "Als Faustregel: Für Alltagsfragen und Schreiben ist praktisch jedes große Modell geeignet. Für Programmieren oder lange Dokumente lohnt sich ein Blick auf Modelle mit großem Kontextfenster und starkem Reasoning.",
+      "Am wichtigsten ist nicht die „perfekte” Wahl, sondern überhaupt anzufangen — die meisten Tools lassen sich kostenlos ausprobieren, bevor man sich festlegt."
+    ],
+    merksatz:"Erst ausprobieren, dann optimieren — die Wahl des Tools ist weniger wichtig als der Start."
+  },
+  {
+    title:"5 Prompt-Tipps mit Vorher/Nachher",
+    teaser:"Kleine Änderungen an der Frage machen oft einen riesigen Unterschied.",
+    paragraphs:[
+      "1) Kontext geben. Vorher: „Schreib eine E-Mail.” Nachher: „Schreib eine kurze, freundliche E-Mail an einen Kunden, der eine Lieferverzögerung von 3 Tagen entschuldigt.”",
+      "2) Rolle/Ton festlegen. Vorher: „Erkläre Zinseszins.” Nachher: „Erkläre Zinseszins wie einem 12-Jährigen, mit einem Alltagsbeispiel.”",
+      "3) Format vorgeben. Vorher: „Gib mir Ideen für Namen.” Nachher: „Gib mir 10 Namensideen als nummerierte Liste, jeweils mit einem Halbsatz Begründung.”",
+      "4) In Schritten arbeiten. Vorher: alles in einer riesigen Anfrage. Nachher: erst Gliederung anfragen, dann Abschnitt für Abschnitt ausarbeiten lassen.",
+      "5) Nachfragen statt neu anfangen. Vorher: bei einem unpassenden Ergebnis komplett neu formulieren. Nachher: „Mach es kürzer und weniger förmlich” — im selben Gespräch verfeinern."
+    ],
+    merksatz:"Je konkreter Kontext, Ton und Format vorgegeben werden, desto besser das Ergebnis."
+  },
+  {
+    title:"Typische Anfängerfehler",
+    teaser:"Die häufigsten Stolpersteine — und wie man sie vermeidet.",
+    paragraphs:[
+      "Zu vage fragen und dann enttäuscht sein: Eine einzeilige, kontextlose Frage liefert selten das gewünschte Ergebnis. Mehr Kontext löst das meistens sofort.",
+      "Antworten ungeprüft übernehmen: Gerade bei Fakten, Zahlen oder Zitaten immer kurz gegenchecken, statt blind zu kopieren.",
+      "Nur einen Versuch starten: Die erste Antwort ist selten die beste — nachfragen, präzisieren und verfeinern gehört zum normalen Arbeitsablauf.",
+      "Sensible Daten unbedacht einfügen: Vor dem Absenden kurz überlegen, ob wirklich alles in den Chat gehört, was gerade eingefügt wird."
+    ],
+    merksatz:"Die meisten Anfängerfehler lösen sich durch mehr Kontext und eine zweite Nachfrage."
+  },
+  {
+    title:"5 Aufgaben zum Ausprobieren heute Abend",
+    teaser:"Klein anfangen, direkt einen Unterschied spüren.",
+    paragraphs:[
+      "1) Lass dir eine lange E-Mail oder einen Artikel, den du eh lesen musst, in 5 Stichpunkten zusammenfassen.",
+      "2) Lass dir ein Thema, das du nie verstanden hast, „wie einem Anfänger” erklären — mit einer Analogie aus deinem Alltag.",
+      "3) Lass einen eigenen Text (Nachricht, Bewerbung, Post) auf Klarheit und Ton gegenlesen und verbessern.",
+      "4) Lass dir eine Woche voller Mahlzeiten planen inklusive Einkaufsliste, basierend auf 3 Zutaten, die du magst.",
+      "5) Stell eine Frage zu einem aktuellen Ereignis mit ausdrücklicher Bitte um Websuche, um zu sehen, wie sich das von einer Antwort ohne Internetzugriff unterscheidet."
+    ],
+    merksatz:"Der schnellste Weg, ein Gefühl für KI zu bekommen, ist es an echten Alltagsaufgaben auszuprobieren."
+  }
+];
+
+const GLOSSAR = [
+  {term:"Prompt", def:"Die Eingabe, die du an ein KI-Modell schickst — also deine Frage oder Anweisung. Beispiel: „Fasse diesen Text in drei Sätzen zusammen” ist ein Prompt."},
+  {term:"Token", def:"Ein Textstück, in das Sprachmodelle Wörter zerlegen — oft ein Wort oder Wortteil. Beispiel: „Sprachmodell” kann in zwei Tokens zerlegt werden, „Sprach” und „modell”."},
+  {term:"Halluzination", def:"Wenn ein Modell etwas Falsches erfindet, aber selbstbewusst als Fakt präsentiert. Beispiel: ein erfundenes Buchzitat, das es nie gegeben hat."},
+  {term:"LLM", def:"„Large Language Model” — ein großes Sprachmodell, trainiert auf riesigen Textmengen. Beispiel: Die Modelle hinter Chatbots wie Claude oder ChatGPT sind LLMs."},
+  {term:"Multimodal", def:"Ein Modell, das nicht nur Text, sondern auch Bilder, Audio oder Video verarbeiten oder erzeugen kann. Beispiel: Ein Foto hochladen und dazu eine Frage stellen."},
+  {term:"Open Source", def:"Modelle, deren Aufbau (Gewichte) frei verfügbar ist, sodass sie selbst betrieben oder angepasst werden können. Beispiel: Llama von Meta ist teilweise offen verfügbar."},
+  {term:"Kontextfenster", def:"Wie viel Text (in Tokens) ein Modell auf einmal „im Blick” behalten kann — inklusive Frage, Dokumente und bisherigem Gesprächsverlauf. Beispiel: Ein großes Kontextfenster erlaubt, ein ganzes Buch einzufügen."},
+  {term:"Feintuning", def:"Ein bereits trainiertes Modell mit zusätzlichen, spezifischen Daten nachtrainieren, um es auf eine Aufgabe zu spezialisieren. Beispiel: Ein Modell auf medizinische Fachsprache feinjustieren."},
+  {term:"Agent", def:"Eine KI, die nicht nur antwortet, sondern selbstständig mehrere Schritte ausführt und Werkzeuge nutzt, um ein Ziel zu erreichen. Beispiel: Ein Agent, der eigenständig im Internet recherchiert und daraus einen Bericht erstellt."},
+  {term:"Reasoning", def:"Wenn ein Modell vor der eigentlichen Antwort interne Zwischenschritte „durchdenkt”, um bei komplexen Aufgaben genauer zu sein. Beispiel: Bei einer Matheaufgabe zuerst die Rechenschritte auflisten, dann das Ergebnis nennen."},
+  {term:"API", def:"Eine Schnittstelle, über die Programme direkt mit einem KI-Modell kommunizieren können, ohne die Chat-Oberfläche zu nutzen. Beispiel: Eine App, die im Hintergrund automatisch Texte zusammenfasst."},
+  {term:"GPU", def:"Ein spezieller Computerchip, ursprünglich für Grafik gebaut, der auch besonders gut für das Training und Betreiben von KI-Modellen geeignet ist. Beispiel: Der weltweite GPU-Bedarf ist einer der Gründe für den KI-Boom bei Chipherstellern."}
+];
+
+/* ============================================================
+   DATA: Modelle (kuratiert, statisch, versionsneutral)
+   ============================================================ */
+const MODELLE = [
+  {name:"GPT", dev:"OpenAI", kategorie:"Text", desc:"Vielseitiges Allround-Sprachmodell mit dem größten Verbraucher-Ökosystem rund um Chat, API und eigene Assistenten.",
+    staerken:["Breite Wissensbasis","Großes Ökosystem & Plugins","Gute Multimodalität"], schwaechen:["Spitzenmodelle recht teuer","Wirkt manchmal überzeugend auch bei Fehlern"],
+    usecases:["Alltagsassistent","Coding","Content-Erstellung"], preis:"Kostenloser Einstieg + gestaffelte Abos/API", vergleich:"Der Allrounder mit dem größten Ökosystem."},
+  {name:"Claude", dev:"Anthropic", kategorie:"Text", desc:"Sprachmodell mit Fokus auf Sicherheit, langen Kontext, sauberes Schreiben und verlässlichen Werkzeug-/Agenten-Einsatz.",
+    staerken:["Lange Dokumente & Kontext","Präzises Schreiben","Starkes Tool-Use/Agieren (z. B. Coding-Agenten)"], schwaechen:["Kleineres Consumer-Ökosystem als Konkurrenz"],
+    usecases:["Programmieren","Textarbeit","Recherche mit Dokumenten"], preis:"Kostenloser Einstieg + Pro/Team-Abo + API nach Nutzung", vergleich:"Der Profi für Text, Code und lange Dokumente."},
+  {name:"Gemini", dev:"Google", kategorie:"Text", desc:"Googles Modellfamilie, tief in Suche, Workspace und Android integriert, mit sehr großem Kontextfenster.",
+    staerken:["Tiefe Google-Integration","Riesiges Kontextfenster","Gute Multimodalität"], schwaechen:["Antwortqualität je nach Variante schwankend"],
+    usecases:["Recherche mit Google-Diensten","Dokumentenanalyse","Alltagsfragen"], preis:"Kostenlos in vielen Google-Apps + Abo für Pro-Funktionen", vergleich:"Am tiefsten in den Google-Alltag eingebaut."},
+  {name:"Grok", dev:"xAI", kategorie:"Text", desc:"Sprachmodell von xAI, eng mit der Plattform X verzahnt, mit Fokus auf aktuelle Ereignisse und direktem Ton.",
+    staerken:["Aktuelle Infos aus X/Internet","Direkter, weniger formeller Ton"], schwaechen:["Jüngeres Ökosystem","Weniger etabliert im Business-Einsatz"],
+    usecases:["Aktuelle Ereignisse","Social-Media-nahe Recherche"], preis:"An X-Premium-Abos gekoppelt", vergleich:"Der Newcomer mit direktem Draht zu X."},
+  {name:"Llama", dev:"Meta", kategorie:"Open Source", desc:"Offen verfügbare Modellfamilie von Meta zum Selbst-Hosten, Anpassen und Erforschen.",
+    staerken:["Kostenlos nutzbar & anpassbar","Große Entwickler-Community","Lokal betreibbar"], schwaechen:["Braucht eigene Infrastruktur für gute Performance","Kein poliertes Endnutzer-Interface"],
+    usecases:["Eigene KI-Anwendungen bauen","Forschung","Datenschutz-sensible Projekte"], preis:"Kostenlos (eigene Rechenkosten)", vergleich:"Die Basis für alle, die selbst basteln wollen."},
+  {name:"Mistral", dev:"Mistral AI", kategorie:"Open Source", desc:"Europäisches Unternehmen mit effizienten offenen und kommerziellen Sprachmodellen.",
+    staerken:["Effizient im Rechenaufwand","Teils quelloffen","Europäischer Anbieter (Datenschutz)"], schwaechen:["Kleineres Ökosystem als US-Platzhirsche"],
+    usecases:["Unternehmensanwendungen mit Datenschutzfokus","Entwicklerprojekte"], preis:"Kostenlose offene Modelle + kommerzielle API", vergleich:"Europas Antwort auf die großen US-Modelle."},
+  {name:"DeepSeek", dev:"DeepSeek", kategorie:"Open Source", desc:"Chinesisches Unternehmen, bekannt für sehr leistungsfähige offene Modelle zu geringen Kosten.",
+    staerken:["Starke Reasoning-Leistung","Günstig bis kostenlos nutzbar"], schwaechen:["Fragen zu Datenschutz/Moderation je nach Nutzungskontext"],
+    usecases:["Kostengünstige Entwicklerprojekte","Reasoning-Aufgaben"], preis:"Sehr günstig bis kostenlos (offene Gewichte)", vergleich:"Zeigte, dass Spitzenleistung auch günstig geht."},
+  {name:"Qwen", dev:"Alibaba", kategorie:"Open Source", desc:"Breit gefächerte Modellfamilie des chinesischen Konzerns Alibaba — Text, Bild und Code.",
+    staerken:["Viele Größen/Varianten","Stark in Chinesisch & Englisch","Offen verfügbar"], schwaechen:["Weniger bekannt im Westen"],
+    usecases:["Mehrsprachige Anwendungen","Entwicklerprojekte"], preis:"Kostenlos (offene Gewichte) + Cloud-API", vergleich:"Chinas breiteste offene Modellfamilie."},
+  {name:"Flux", dev:"Black Forest Labs", kategorie:"Bild", desc:"Bildgenerator eines Teams ehemaliger Stable-Diffusion-Entwickler, bekannt für hohe Bildqualität.",
+    staerken:["Hohe Detailtreue","Gute Texterkennung im Bild","Teils offen verfügbar"], schwaechen:["Weniger bekannt in Kreativ-Communities als Konkurrenz"],
+    usecases:["Produktbilder","Illustrationen","Design-Entwürfe"], preis:"Kostenlose offene Version + kommerzielle API", vergleich:"Der technisch versierte Herausforderer von Midjourney."},
+  {name:"Midjourney", dev:"Midjourney Inc.", kategorie:"Bild", desc:"Der Klassiker unter den KI-Bildgeneratoren, bekannt für besonders ästhetische Ergebnisse.",
+    staerken:["Herausragende Bildästhetik","Große Community & Styles"], schwaechen:["Nur über Discord/Web-App","Kein kostenloser Tarif"],
+    usecases:["Konzeptkunst","Stimmungsbilder","Marketing-Visuals"], preis:"Reine Abo-Modelle", vergleich:"Der Goldstandard für schöne KI-Bilder."},
+  {name:"Veo", dev:"Google DeepMind", kategorie:"Video", desc:"Googles Videogenerierungsmodell, erzeugt Clips aus Text- oder Bild-Prompts.",
+    staerken:["Hohe Videoqualität","Gute Integration in Google-Tools"], schwaechen:["Rechenintensiv","Begrenzte Clip-Länge"],
+    usecases:["Kurze Marketing-Clips","Konzept-Videos","Social-Content"], preis:"An Google-Abos/API gekoppelt", vergleich:"Googles Antwort auf KI-generiertes Video."},
+  {name:"Runway", dev:"Runway", kategorie:"Video", desc:"Pionier für KI-Videobearbeitung und -generierung, beliebt bei Kreativ-Profis.",
+    staerken:["Viele Kreativ-Tools, nicht nur Generierung","Etabliert in der Filmbranche"], schwaechen:["Preis für Profi-Nutzung","Gewisse Lernkurve"],
+    usecases:["Kurzfilme","VFX-Experimente","Werbeclips"], preis:"Kostenloser Einstieg + gestaffelte Abos", vergleich:"Das Kreativ-Studio unter den Video-Tools."},
+  {name:"Kling", dev:"Kuaishou", kategorie:"Video", desc:"Chinesisches Videomodell, bekannt für lange, physikalisch stimmige Clips.",
+    staerken:["Lange Clip-Dauer","Realistische Bewegungen/Physik"], schwaechen:["Zugang/Wartelisten außerhalb Chinas variieren"],
+    usecases:["Realistische Szenen","Social-Media-Videos"], preis:"Kostenlose Kontingente + Abo", vergleich:"Der Video-Champion aus China mit beeindruckender Physik."},
+  {name:"Suno", dev:"Suno AI", kategorie:"Audio", desc:"Erzeugt vollständige Songs inklusive Gesang direkt aus Text-Prompts.",
+    staerken:["Komplette Songs in Sekunden","Einfache Bedienung"], schwaechen:["Rechtliche Grauzonen bei Nutzung/Verwertung","Textqualität schwankt"],
+    usecases:["Jingles","Demo-Songs","Hobby-Musikproduktion"], preis:"Kostenloser Einstieg + Abo für mehr Songs/Rechte", vergleich:"Der einfachste Weg zu einem fertigen Song."}
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = { feed:[], filter:'Alle', modelFilter:'Alle', loading:false, error:null };
+const UNSPLASH_POOL = [
+  'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=1200&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1591453089816-0fbb971b454c?w=1200&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1526378722484-bd91ca387e72?w=1200&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&q=80&auto=format&fit=crop'
+];
+
+function hashStr(s){ let h=0; s=String(s||''); for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;} return Math.abs(h); }
+function avatarGradient(name){ const h=hashStr(name); const h1=h%360, h2=(h1+42)%360; return `linear-gradient(135deg, hsl(${h1},72%,46%), hsl(${h2},70%,34%))`; }
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ============================================================
+   DATA LOADING
+   Die Seite macht selbst KEINE Anthropic-API-Aufrufe mehr.
+   Ein separates Server-Skript (scripts/generate-news.js) erzeugt
+   per Cron news.json / archive.json / weekly-review.json — die
+   Seite liest hier nur noch diese statischen Dateien.
+   ============================================================ */
+async function fetchJSON(path){
+  const res = await fetch(path + '?t=' + Date.now());
+  if (!res.ok) throw new Error(`${path} konnte nicht geladen werden (${res.status})`);
+  return res.json();
+}
+function formatDayHeader(key){
+  const parts = key.replace('day-','').split('-').map(Number);
+  const d = new Date(parts[0], parts[1]-1, parts[2]);
+  const fmt = new Intl.DateTimeFormat('de-DE', {weekday:'long', day:'numeric', month:'long'});
+  return fmt.format(d);
+}
+
+/* ============================================================
+   IMAGE FALLBACK CHAIN
+   ============================================================ */
+function createMediaEl(post, compactMonogramSource){
+  const wrap = document.createElement('div');
+  wrap.className = 'post-media';
+  const candidates = [];
+  if (post.image) candidates.push(post.image);
+  candidates.push(UNSPLASH_POOL[hashStr(post.headline) % UNSPLASH_POOL.length]);
+  let stage = 0;
+  const img = document.createElement('img');
+  img.alt = post.headline || '';
+  img.loading = 'lazy';
+  function fallback(){
+    if (stage < candidates.length){ img.src = candidates[stage]; stage++; }
+    else {
+      const grad = document.createElement('div');
+      grad.className = 'post-media-fallback';
+      const label = (post.companies && post.companies[0]) || post.source || compactMonogramSource || '?';
+      grad.style.background = avatarGradient(label);
+      grad.textContent = String(label).charAt(0).toUpperCase();
+      wrap.replaceChildren(grad);
+    }
+  }
+  img.onerror = fallback;
+  fallback();
+  wrap.appendChild(img);
+  return wrap;
+}
+
+/* ============================================================
+   FEED
+   ============================================================ */
+function categoryToFilterGroup(cat){
+  if (cat === 'Modelle' || cat === 'Tools') return 'Modelle & Tools';
+  if (cat === 'Unternehmen' || cat === 'Wirtschaft') return 'Business';
+  if (cat === 'Forschung') return 'Forschung';
+  if (cat === 'Politik') return 'Politik';
+  return 'Alle';
+}
+
+async function loadFeed(){
+  state.loading = true; state.error = null;
+  renderFeed();
+  const btn = document.getElementById('feed-refresh');
+  btn.classList.add('spinning');
+  try{
+    const items = await fetchJSON('./news.json');
+    if (!Array.isArray(items)) throw new Error('Unerwartetes Format');
+    state.feed = items;
+    state.loading = false;
+    renderFeed();
+  }catch(e){
+    state.loading = false;
+    state.error = e.message || 'Unbekannter Fehler';
+    renderFeed();
+  }
+  btn.classList.remove('spinning');
+}
+
+function renderFeed(){
+  const list = document.getElementById('feed-list');
+  list.innerHTML = '';
+  if (state.loading){
+    for (let i=0;i<4;i++){
+      const sk = document.createElement('div');
+      sk.className = 'skeleton';
+      sk.innerHTML = `<div class="shimmer sk-media"></div><div class="shimmer sk-line w60"></div><div class="shimmer sk-line w90"></div><div class="shimmer sk-line w60"></div>`;
+      list.appendChild(sk);
+    }
+    return;
+  }
+  if (state.error){
+    const box = document.createElement('div');
+    box.className = 'error-box';
+    box.innerHTML = `<p>Feed konnte nicht geladen werden: ${escapeHtml(state.error)}</p><p style="font-size:12px;color:var(--text-faint);">Hinweis: news.json wird per GitHub Actions erzeugt — direkt nach dem Einrichten kann die erste Aktualisierung etwas dauern.</p>`;
+    const retry = document.createElement('button');
+    retry.className = 'lime-btn'; retry.textContent = 'Erneut versuchen';
+    retry.onclick = loadFeed;
+    box.appendChild(retry);
+    list.appendChild(box);
+    return;
+  }
+  const filtered = state.filter === 'Alle' ? state.feed : state.feed.filter(p=>categoryToFilterGroup(p.category) === state.filter);
+  if (!filtered.length){
+    const empty = document.createElement('div');
+    empty.className = 'empty-box';
+    empty.textContent = state.feed.length ? 'Keine Meldungen in dieser Kategorie — versuch einen anderen Filter.' : 'Noch keine Meldungen geladen. Klicke auf „Feed aktualisieren”.';
+    list.appendChild(empty);
+    return;
+  }
+  filtered.forEach((post, i)=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.animationDelay = (i*0.05)+'s';
+    const top = document.createElement('div');
+    top.className = 'post-top';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    const companyLabel = (post.companies && post.companies[0]) || post.source || '?';
+    avatar.style.background = avatarGradient(companyLabel);
+    avatar.textContent = String(companyLabel).charAt(0).toUpperCase();
+    const body = document.createElement('div');
+    body.style.flex = '1';
+    body.innerHTML = `
+      <div class="post-meta-line">
+        <span class="post-company">${escapeHtml(companyLabel)}</span>
+        <span class="badge">${escapeHtml(post.category||'')}</span>
+        <span class="post-source">${escapeHtml(post.source||'')}</span>
+      </div>
+      <div class="post-headline">${escapeHtml(post.headline||'')}</div>
+    `;
+    top.appendChild(avatar); top.appendChild(body);
+    card.appendChild(top);
+    card.appendChild(createMediaEl(post));
+    const why = document.createElement('p');
+    why.className = 'post-why'; why.textContent = post.why || '';
+    card.appendChild(why);
+    if (post.models && post.models.length){
+      const tags = document.createElement('div'); tags.className = 'hashtags';
+      post.models.forEach(m=>{ const t = document.createElement('span'); t.className='hashtag'; t.textContent = '#'+String(m).replace(/\s+/g,''); tags.appendChild(t); });
+      card.appendChild(tags);
+    }
+    const hint = document.createElement('div'); hint.className = 'hover-hint'; hint.textContent = 'Details öffnen →';
+    card.appendChild(hint);
+    card.onclick = ()=> openNewsDetail(post);
+    list.appendChild(card);
+  });
+}
+
+/* ============================================================
+   NEWS DETAIL (bottom sheet — Einordnung kommt bereits fertig
+   aus news.json/archive.json, kein Live-API-Call mehr nötig)
+   ============================================================ */
+function openNewsDetail(post){
+  openSheet();
+  if (post.detail){ renderNewsDetail(post, post.detail); return; }
+  const content = document.getElementById('sheet-content');
+  content.innerHTML = `<h2>${escapeHtml(post.headline)}</h2><div class="empty-box">Für diese Meldung ist noch keine vertiefte Einordnung verfügbar.</div>` +
+    (post.url ? `<p><a href="${escapeHtml(post.url)}" target="_blank" rel="noopener">Zur Originalquelle (${escapeHtml(post.source||'')}) →</a></p>` : '');
+}
+function renderNewsDetail(post, detail){
+  const content = document.getElementById('sheet-content');
+  content.innerHTML = '';
+  const media = createMediaEl(post);
+  media.classList.add('sheet-media');
+  content.appendChild(media);
+  const h2 = document.createElement('h2'); h2.textContent = post.headline; content.appendChild(h2);
+
+  const chips = document.createElement('div');
+  (post.models||[]).forEach(m=>{ const c=document.createElement('span'); c.className='chip-mini'; c.textContent=m; chips.appendChild(c); });
+  (post.companies||[]).forEach(m=>{ const c=document.createElement('span'); c.className='chip-mini'; c.textContent=m; chips.appendChild(c); });
+  content.appendChild(chips);
+
+  function section(kicker, html){
+    const k = document.createElement('h4'); k.className='kicker'; k.textContent = kicker; content.appendChild(k);
+    const p = document.createElement('div'); p.innerHTML = html; content.appendChild(p);
+  }
+  section('Was ist passiert', `<p>${escapeHtml(detail.what||'')}</p>`);
+  section('Warum es wichtig ist', `<p>${escapeHtml(detail.why||'')}</p>`);
+  section('Auswirkungen', `<ul>${(detail.impact||[]).map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul>`);
+  section('Einordnung', `<p>${escapeHtml(detail.context||'')}</p>`);
+  section('Takeaway', `<div class="merksatz">${escapeHtml(detail.takeaway||'')}</div>`);
+
+  if (post.url){
+    const link = document.createElement('p');
+    link.innerHTML = `<a href="${escapeHtml(post.url)}" target="_blank" rel="noopener">Zur Originalquelle (${escapeHtml(post.source||'')}) →</a>`;
+    content.appendChild(link);
+  }
+}
+
+/* ============================================================
+   EINSTIEG rendering
+   ============================================================ */
+function renderEinstieg(){
+  const grund = document.getElementById('einstieg-grundlagen');
+  grund.innerHTML = '';
+  GRUNDLAGEN.forEach((g, i)=>{
+    const card = document.createElement('div');
+    card.className = 'simple-card'; card.style.marginBottom = '10px';
+    card.innerHTML = `<div class="row"><span class="num-badge">${i+1}</span><div><h3>${escapeHtml(g.title)}</h3><p>${escapeHtml(g.teaser)}</p></div></div>`;
+    card.onclick = ()=> openStaticSheet(g.title, g.paragraphs, g.merksatz);
+    grund.appendChild(card);
+  });
+
+  const schritte = document.getElementById('einstieg-schritte');
+  schritte.innerHTML = '';
+  ERSTE_SCHRITTE.forEach(g=>{
+    const card = document.createElement('div');
+    card.className = 'simple-card';
+    card.innerHTML = `<h3>${escapeHtml(g.title)}</h3><p>${escapeHtml(g.teaser)}</p>`;
+    card.onclick = ()=> openStaticSheet(g.title, g.paragraphs, g.merksatz);
+    schritte.appendChild(card);
+  });
+
+  const gloss = document.getElementById('einstieg-glossar');
+  gloss.innerHTML = '';
+  GLOSSAR.forEach(g=>{
+    const chip = document.createElement('div');
+    chip.className = 'glossary-chip';
+    chip.innerHTML = `<strong>${escapeHtml(g.term)}</strong>`;
+    chip.onclick = ()=>{
+      openSheet();
+      const content = document.getElementById('sheet-content');
+      content.innerHTML = `<h2>${escapeHtml(g.term)}</h2><p>${escapeHtml(g.def)}</p>`;
+    };
+    gloss.appendChild(chip);
+  });
+}
+function openStaticSheet(title, paragraphs, merksatz){
+  openSheet();
+  const content = document.getElementById('sheet-content');
+  content.innerHTML = `<h2>${escapeHtml(title)}</h2>` +
+    paragraphs.map(p=>`<p>${escapeHtml(p)}</p>`).join('') +
+    (merksatz ? `<div class="merksatz"><strong>Merksatz:</strong> ${escapeHtml(merksatz)}</div>` : '');
+}
+
+/* ============================================================
+   MODELLE rendering
+   ============================================================ */
+function renderModelle(){
+  const list = document.getElementById('model-list');
+  list.innerHTML = '';
+  const filtered = state.modelFilter === 'Alle' ? MODELLE : MODELLE.filter(m=>m.kategorie === state.modelFilter);
+  filtered.forEach(m=>{
+    const card = document.createElement('div');
+    card.className = 'model-card';
+    const avatar = document.createElement('div'); avatar.className='avatar'; avatar.style.background = avatarGradient(m.name); avatar.textContent = m.name.charAt(0);
+    const body = document.createElement('div'); body.style.flex='1';
+    body.innerHTML = `<h3>${escapeHtml(m.name)}</h3><div class="dev">${escapeHtml(m.dev)} · ${escapeHtml(m.kategorie)}</div><p>${escapeHtml(m.desc)}</p><div class="usecase-chips">${m.usecases.map(u=>`<span class="usecase-chip">${escapeHtml(u)}</span>`).join('')}</div>`;
+    card.appendChild(avatar); card.appendChild(body);
+    card.onclick = ()=> openModelSheet(m);
+    list.appendChild(card);
+  });
+}
+function openModelSheet(m){
+  openSheet();
+  const content = document.getElementById('sheet-content');
+  content.innerHTML = `
+    <h2>${escapeHtml(m.name)}</h2>
+    <p style="color:var(--lime);font-family:var(--mono);font-size:12px;margin-top:-8px;">${escapeHtml(m.dev)} · ${escapeHtml(m.kategorie)}</p>
+    <p>${escapeHtml(m.desc)}</p>
+    <h4 class="kicker">Stärken</h4><ul>${m.staerken.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>
+    <h4 class="kicker">Schwächen</h4><ul>${m.schwaechen.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>
+    <h4 class="kicker">Typische Use Cases</h4>
+    <div class="usecase-chips">${m.usecases.map(u=>`<span class="usecase-chip">${escapeHtml(u)}</span>`).join('')}</div>
+    <h4 class="kicker">Preisniveau</h4><p>${escapeHtml(m.preis)}</p>
+    <div class="merksatz">${escapeHtml(m.vergleich)}</div>
+    <p style="font-size:12px;color:var(--text-faint);margin-top:20px;">Kuratierte Basisdaten — Versionen und Preise ändern sich schnell.</p>
+  `;
+}
+
+/* ============================================================
+   ARCHIV + WOCHENRÜCKBLICK
+   ============================================================ */
+let archiveCache = null;
+async function loadArchive(){
+  if (archiveCache) return archiveCache;
+  archiveCache = await fetchJSON('./archive.json');
+  return archiveCache;
+}
+async function renderArchive(){
+  const list = document.getElementById('archive-list');
+  list.innerHTML = `<div class="empty-box">Archiv wird geladen …</div>`;
+  let archive;
+  try{ archive = await loadArchive(); }
+  catch(e){
+    list.innerHTML = `<div class="empty-box">Archiv konnte nicht geladen werden: ${escapeHtml(e.message)}</div>`;
+    return;
+  }
+  const keys = Object.keys(archive).filter(k=>k.startsWith('day-')).sort().reverse().slice(0,14);
+  if (!keys.length){
+    list.innerHTML = `<div class="empty-box">Noch keine Archiv-Einträge — das Archiv wächst automatisch, sobald der Feed aktualisiert wird.</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  for (const key of keys){
+    const items = archive[key] || [];
+    if (!items.length) continue;
+    const group = document.createElement('div'); group.className='day-group';
+    const header = document.createElement('div'); header.className='day-header';
+    header.textContent = `${formatDayHeader(key)} · ${items.length} Meldungen`;
+    group.appendChild(header);
+    items.forEach(post=>{
+      const row = document.createElement('div'); row.className='compact-post';
+      row.innerHTML = `<div><div class="post-meta-line"><span class="badge">${escapeHtml(post.category||'')}</span><span class="post-source">${escapeHtml(post.source||'')}</span></div><div class="post-headline" style="font-size:14px;margin:2px 0 0;">${escapeHtml(post.headline||'')}</div></div>`;
+      row.onclick = ()=> openNewsDetail(post);
+      group.appendChild(row);
+    });
+    list.appendChild(group);
+  }
+}
+
+async function weeklyReview(){
+  openSheet();
+  document.getElementById('sheet-content').innerHTML = `<div class="sheet-loading"><span class="spinner"></span>Wochenrückblick wird geladen …</div>`;
+  try{
+    const review = await fetchJSON('./weekly-review.json');
+    document.getElementById('sheet-content').innerHTML = `
+      <h2>Wochenrückblick</h2>
+      <h4 class="kicker">Die Woche</h4><p>${escapeHtml(review.summary||'')}</p>
+      <h4 class="kicker">Highlights</h4><ul>${(review.highlights||[]).map(h=>`<li>${escapeHtml(h)}</li>`).join('')}</ul>
+      <h4 class="kicker">Trend</h4><p>${escapeHtml(review.trend||'')}</p>
+      <h4 class="kicker">Worauf achten</h4><p>${escapeHtml(review.watch||'')}</p>
+    `;
+  }catch(e){
+    document.getElementById('sheet-content').innerHTML = `<h2>Wochenrückblick</h2><div class="empty-box">Noch zu wenig Material für einen sinnvollen Rückblick, oder die Datei wurde noch nicht erzeugt — nach den ersten Feed-Aktualisierungen klappt's.</div>`;
+  }
+}
+
+/* ============================================================
+   SHEET (generic bottom sheet)
+   ============================================================ */
+function openSheet(){
+  document.getElementById('sheet-backdrop').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+}
+function closeSheet(){
+  document.getElementById('sheet-backdrop').classList.remove('open');
+  document.getElementById('sheet').classList.remove('open');
+}
+document.getElementById('sheet-close').onclick = closeSheet;
+document.getElementById('sheet-backdrop').onclick = closeSheet;
+document.addEventListener('keydown', e=>{ if (e.key === 'Escape') closeSheet(); });
+
+/* ============================================================
+   TABS
+   ============================================================ */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'archiv') renderArchive();
+  };
+});
+
+document.querySelectorAll('#feed-filters .chip').forEach(chip=>{
+  chip.onclick = ()=>{
+    document.querySelectorAll('#feed-filters .chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    state.filter = chip.dataset.filter;
+    renderFeed();
+  };
+});
+document.querySelectorAll('#model-filters .chip').forEach(chip=>{
+  chip.onclick = ()=>{
+    document.querySelectorAll('#model-filters .chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    state.modelFilter = chip.dataset.filter;
+    renderModelle();
+  };
+});
+document.getElementById('feed-refresh').onclick = loadFeed;
+document.getElementById('weekly-review-btn').onclick = weeklyReview;
+
+/* ============================================================
+   HEADER DATE
+   ============================================================ */
+document.getElementById('header-date').textContent = new Intl.DateTimeFormat('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'}).format(new Date());
+
+/* ============================================================
+   INTRO (swipe / drag / wheel / keys)
+   ============================================================ */
+(function initIntro(){
+  const track = document.getElementById('slides-track');
+  const dashes = document.querySelectorAll('#intro-progress .dash');
+  let slide = 0;
+  const total = 3;
+  let dragging = false, startX = 0, startTranslate = 0, currentTranslate = 0;
+
+  function update(animated){
+    currentTranslate = -slide * (100/total);
+    track.style.transform = `translateX(${currentTranslate}%)`;
+    dashes.forEach((d,i)=> d.classList.toggle('active', i===slide));
+  }
+  function goTo(n){ slide = Math.max(0, Math.min(total-1, n)); update(); }
+  function next(){ if (slide < total-1) goTo(slide+1); else finishIntro(); }
+  function prev(){ goTo(slide-1); }
+
+  track.addEventListener('pointerdown', e=>{
+    dragging = true; startX = e.clientX; startTranslate = currentTranslate;
+    track.classList.add('dragging'); track.setPointerCapture(e.pointerId);
+  });
+  track.addEventListener('pointermove', e=>{
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const pct = (dx / window.innerWidth) * (100/total);
+    track.style.transform = `translateX(${startTranslate + pct}%)`;
+  });
+  function endDrag(e){
+    if (!dragging) return;
+    dragging = false; track.classList.remove('dragging');
+    const dx = e.clientX - startX;
+    if (dx < -60) next();
+    else if (dx > 60) prev();
+    else update();
+  }
+  track.addEventListener('pointerup', endDrag);
+  track.addEventListener('pointercancel', endDrag);
+
+  let wheelLock = false;
+  document.getElementById('intro').addEventListener('wheel', e=>{
+    if (wheelLock) return;
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(delta) < 20) return;
+    wheelLock = true; setTimeout(()=> wheelLock = false, 500);
+    if (delta > 0) next(); else prev();
+  }, {passive:true});
+
+  document.addEventListener('keydown', e=>{
+    if (document.getElementById('intro').classList.contains('exiting')) return;
+    if (e.key === 'ArrowRight') next();
+    else if (e.key === 'ArrowLeft') prev();
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'Escape') finishIntro();
+  });
+
+  document.getElementById('intro-skip').onclick = finishIntro;
+  document.getElementById('intro-start').onclick = finishIntro;
+
+  function finishIntro(){
+    const intro = document.getElementById('intro');
+    if (intro.classList.contains('exiting')) return;
+    intro.classList.add('exiting');
+    setTimeout(()=>{
+      intro.style.display = 'none';
+      document.getElementById('app').hidden = false;
+      dimBackground();
+    }, 620);
+  }
+
+  update();
+  loadFeed();
+})();
+
+/* ============================================================
+   THREE.JS BACKGROUND
+   ============================================================ */
+let bgState = { introOpacity:{particles:0.55, mesh:0.16}, appOpacity:{particles:0.22, mesh:0.05} };
+function dimBackground(){
+  if (window.__bg && window.__bg.setTarget) window.__bg.setTarget(bgState.appOpacity);
+}
+(function initBackground(){
+  if (window.__THREE_FAILED__ || typeof THREE === 'undefined'){ return; }
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const container = document.getElementById('bg-canvas');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.z = 34;
+  const renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  container.appendChild(renderer.domElement);
+
+  const limeColor = new THREE.Color(0xd2ff00);
+
+  const particleCount = 900;
+  const positions = new Float32Array(particleCount*3);
+  for (let i=0;i<particleCount;i++){
+    positions[i*3] = (Math.random()-0.5)*90;
+    positions[i*3+1] = (Math.random()-0.5)*90;
+    positions[i*3+2] = (Math.random()-0.5)*60;
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  const pMat = new THREE.PointsMaterial({ color: limeColor, size:0.5, transparent:true, opacity: bgState.introOpacity.particles });
+  const particles = new THREE.Points(pGeo, pMat);
+  scene.add(particles);
+
+  const icoGeo = new THREE.IcosahedronGeometry(14, 1);
+  const icoMat = new THREE.MeshBasicMaterial({ color: limeColor, wireframe:true, transparent:true, opacity: bgState.introOpacity.mesh });
+  const ico = new THREE.Mesh(icoGeo, icoMat);
+  scene.add(ico);
+
+  let target = { particles: pMat.opacity, mesh: icoMat.opacity };
+  window.__bg = { setTarget(o){ target = o; } };
+
+  let mouseX = 0, mouseY = 0;
+  window.addEventListener('mousemove', e=>{
+    mouseX = (e.clientX / window.innerWidth - 0.5);
+    mouseY = (e.clientY / window.innerHeight - 0.5);
+  });
+  window.addEventListener('resize', ()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  function animate(){
+    requestAnimationFrame(animate);
+    pMat.opacity += (target.particles - pMat.opacity) * 0.05;
+    icoMat.opacity += (target.mesh - icoMat.opacity) * 0.05;
+    if (!reduced){
+      ico.rotation.y += 0.0015;
+      ico.rotation.x += 0.0007;
+      particles.rotation.y += 0.0003;
+      camera.position.x += (mouseX*8 - camera.position.x) * 0.03;
+      camera.position.y += (-mouseY*8 - camera.position.y) * 0.03;
+      camera.lookAt(scene.position);
+    }
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+/* ============================================================
+   INITIAL RENDER
+   ============================================================ */
+renderEinstieg();
+renderModelle();
+</script>
+</body>
+</html>
