@@ -1,6 +1,10 @@
 // Läuft serverseitig (z.B. per GitHub Actions Cron) mit einem echten Anthropic-API-Key.
 // Erzeugt/aktualisiert news.json, archive.json und weekly-review.json im Repo-Root.
 // Die Website (index.html) macht selbst KEINE API-Aufrufe mehr, sondern liest nur diese Dateien.
+//
+// Unterstützt mehrere Themen (aktuell KI + Finanzen) über die TOPICS-Konfiguration.
+// Jedes Feed-Item bekommt ein `topic`-Feld, damit die Website einen gemeinsamen,
+// nach Thema filterbaren Feed anzeigen kann.
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -65,22 +69,44 @@ function todayKey(d) {
   return `day-${y}-${m}-${day}`;
 }
 
-const FEED_PROMPT = `Du bist Redakteur für "Signal", ein privates KI-News-Dashboard. Recherchiere per Websuche die 8 wichtigsten AKTUELLEN Nachrichten aus der KI-Welt der letzten 1-3 Tage, quer über die Bereiche: Modelle & Tools, Unternehmen & Wirtschaft, Forschung, Politik/Regulierung.
+/* ============================================================
+   TOPICS
+   ============================================================ */
+const TOPICS = [
+  {
+    id: 'ki',
+    label: 'KI',
+    count: 6,
+    categories: '"Modelle", "Tools", "Unternehmen", "Wirtschaft", "Forschung", "Politik"',
+    beat: 'die KI-Welt (Sprachmodelle, KI-Tools, KI-Unternehmen & Wirtschaft, KI-Forschung, KI-Politik/Regulierung)'
+  },
+  {
+    id: 'finanzen',
+    label: 'Finanzen',
+    count: 6,
+    categories: '"Märkte", "Unternehmen", "Zentralbanken", "Krypto", "Rohstoffe"',
+    beat: 'die Finanzwelt (Aktienmärkte, Unternehmenszahlen, Zentralbanken & Zinsen, Kryptowährungen, Rohstoffe)'
+  }
+];
 
-Gib AUSSCHLIESSLICH reines JSON zurück, ohne Markdown, ohne Codeblock-Zäune, ohne Erklärtext. Format: ein JSON-Array mit genau 8 Objekten, jedes mit den Feldern:
+function feedPrompt(topic) {
+  return `Du bist Redakteur für "NewSync", ein privates News-Dashboard, Ressort ${topic.label}. Recherchiere per Websuche die ${topic.count} wichtigsten AKTUELLEN Nachrichten der letzten 1-3 Tage aus ${topic.beat}.
+
+Gib AUSSCHLIESSLICH reines JSON zurück, ohne Markdown, ohne Codeblock-Zäune, ohne Erklärtext. Format: ein JSON-Array mit genau ${topic.count} Objekten, jedes mit den Feldern:
 - headline: string, Deutsch, maximal 12 Wörter
 - why: string, 1-2 Sätze: was ist passiert und warum ist es relevant
-- category: string, GENAU EINER dieser Werte: "Modelle", "Tools", "Unternehmen", "Wirtschaft", "Forschung", "Politik"
+- category: string, GENAU EINER dieser Werte: ${topic.categories}
 - source: string, Name der Quelle
 - url: string, Link zum Original-Artikel
 - image: string oder null, eine Bild-URL falls bekannt, sonst null
-- models: array von strings, erwähnte Modellnamen (kann leer sein)
+- models: array von strings, erwähnte Modellnamen/Produkte/Assets (kann leer sein)
 - companies: array von strings, erwähnte Firmennamen (kann leer sein)
 
 Antworte NUR mit dem JSON-Array.`;
+}
 
-function detailPrompt(post) {
-  return `Du bist Redakteur für "Signal". Erstelle eine vertiefte Einordnung zu folgender KI-Nachricht. Nutze Websuche für zusätzlichen Kontext.
+function detailPrompt(topic, post) {
+  return `Du bist Redakteur für "NewSync", Ressort ${topic.label}. Erstelle eine vertiefte Einordnung zu folgender Nachricht. Nutze Websuche für zusätzlichen Kontext.
 
 Headline: ${post.headline}
 Kurzfassung: ${post.why}
@@ -96,8 +122,8 @@ Gib AUSSCHLIESSLICH reines JSON zurück, ohne Markdown, ohne Codeblock-Zäune. F
 Antworte NUR mit dem JSON-Objekt.`;
 }
 
-function weeklyPrompt(items) {
-  return `Du bist Redakteur für "Signal". Hier ist eine Liste von KI-Nachrichten der letzten 7 Tage als JSON:
+function weeklyPrompt(topic, items) {
+  return `Du bist Redakteur für "NewSync", Ressort ${topic.label}. Hier ist eine Liste von Nachrichten der letzten 7 Tage als JSON:
 ${JSON.stringify(items.map(i => ({ headline: i.headline, why: i.why, category: i.category })))}
 
 Erstelle daraus OHNE Websuche, NUR basierend auf diesen Daten, einen Wochenrückblick. Gib AUSSCHLIESSLICH reines JSON zurück, ohne Markdown, ohne Codeblock-Zäune. Format: ein JSON-Objekt mit:
@@ -110,10 +136,6 @@ Antworte NUR mit dem JSON-Objekt.`;
 }
 
 async function main() {
-  console.log('Lade aktuelle News per Websuche...');
-  const items = await callClaude(FEED_PROMPT, true);
-  if (!Array.isArray(items)) throw new Error('Unerwartetes Feed-Format (kein Array)');
-
   const archive = await readJSON(ARCHIVE_PATH, {});
 
   // Bereits bekannte Detail-Einordnungen wiederverwenden statt neu zu generieren (spart Kosten)
@@ -122,25 +144,33 @@ async function main() {
     for (const it of day) if (it.detail) knownDetails.set(it.headline, it.detail);
   }
 
-  for (const item of items) {
-    if (knownDetails.has(item.headline)) {
-      item.detail = knownDetails.get(item.headline);
-      continue;
+  let allNewItems = [];
+  for (const topic of TOPICS) {
+    console.log(`Lade aktuelle News (${topic.label}) per Websuche...`);
+    const items = await callClaude(feedPrompt(topic), true);
+    if (!Array.isArray(items)) throw new Error(`Unerwartetes Feed-Format für Thema ${topic.id}`);
+    for (const item of items) {
+      item.topic = topic.id;
+      if (knownDetails.has(item.headline)) {
+        item.detail = knownDetails.get(item.headline);
+        continue;
+      }
+      try {
+        console.log('Erzeuge Einordnung für:', item.headline);
+        item.detail = await callClaude(detailPrompt(topic, item), true, 2048);
+      } catch (e) {
+        console.error('Detail-Fehler für "' + item.headline + '":', e.message);
+        item.detail = null;
+      }
     }
-    try {
-      console.log('Erzeuge Einordnung für:', item.headline);
-      item.detail = await callClaude(detailPrompt(item), true, 2048);
-    } catch (e) {
-      console.error('Detail-Fehler für "' + item.headline + '":', e.message);
-      item.detail = null;
-    }
+    allNewItems = allNewItems.concat(items);
   }
 
   const key = todayKey();
   const existingToday = archive[key] || [];
   const seen = new Set(existingToday.map(x => x.headline));
   const mergedToday = existingToday.slice();
-  for (const it of items) {
+  for (const it of allNewItems) {
     if (!seen.has(it.headline)) { mergedToday.push(it); seen.add(it.headline); }
   }
   archive[key] = mergedToday;
@@ -151,30 +181,34 @@ async function main() {
   const prunedArchive = {};
   for (const k of keptKeys) prunedArchive[k] = archive[k];
 
-  await fs.writeFile(NEWS_PATH, JSON.stringify(items, null, 2));
+  await fs.writeFile(NEWS_PATH, JSON.stringify(allNewItems, null, 2));
   await fs.writeFile(ARCHIVE_PATH, JSON.stringify(prunedArchive, null, 2));
-  console.log(`Feed aktualisiert: ${items.length} Meldungen. Archiv-Tage: ${keptKeys.length}.`);
+  console.log(`Feed aktualisiert: ${allNewItems.length} Meldungen (${TOPICS.map(t => t.label).join(', ')}). Archiv-Tage: ${keptKeys.length}.`);
 
-  // Wochenrückblick (ohne Websuche, nur aus Archivdaten)
+  // Wochenrückblick pro Thema (ohne Websuche, nur aus Archivdaten)
   const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  let weekItems = [];
-  for (const k of keptKeys) {
-    const parts = k.replace('day-', '').split('-').map(Number);
-    const d = new Date(parts[0], parts[1] - 1, parts[2]).getTime();
-    if (d >= cutoff) weekItems = weekItems.concat(prunedArchive[k]);
-  }
-  if (weekItems.length >= 3) {
-    try {
-      const review = await callClaude(weeklyPrompt(weekItems), false, 1024);
-      review.generatedAt = new Date().toISOString();
-      await fs.writeFile(WEEKLY_PATH, JSON.stringify(review, null, 2));
-      console.log('Wochenrückblick aktualisiert.');
-    } catch (e) {
-      console.error('Wochenrückblick-Fehler:', e.message);
+  const weekly = {};
+  for (const topic of TOPICS) {
+    let weekItems = [];
+    for (const k of keptKeys) {
+      const parts = k.replace('day-', '').split('-').map(Number);
+      const d = new Date(parts[0], parts[1] - 1, parts[2]).getTime();
+      if (d >= cutoff) weekItems = weekItems.concat((prunedArchive[k] || []).filter(it => it.topic === topic.id));
     }
-  } else {
-    console.log('Noch zu wenig Material für Wochenrückblick (' + weekItems.length + ' Meldungen).');
+    if (weekItems.length >= 3) {
+      try {
+        const review = await callClaude(weeklyPrompt(topic, weekItems), false, 1024);
+        review.generatedAt = new Date().toISOString();
+        weekly[topic.id] = review;
+        console.log(`Wochenrückblick (${topic.label}) aktualisiert.`);
+      } catch (e) {
+        console.error(`Wochenrückblick-Fehler (${topic.label}):`, e.message);
+      }
+    } else {
+      console.log(`Noch zu wenig Material für Wochenrückblick ${topic.label} (${weekItems.length} Meldungen).`);
+    }
   }
+  await fs.writeFile(WEEKLY_PATH, JSON.stringify(weekly, null, 2));
 }
 
 main().catch(e => {

@@ -3,255 +3,282 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Signal — AI Intelligence</title>
+<title>NewSync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0a0a0c;
     --panel:rgba(22,22,26,.6);
     --panel-solid:#141417;
     --border:rgba(255,255,255,.08);
-    --lime:#d2ff00;
-    --lime-dim:rgba(210,255,0,.16);
+    --divider:rgba(255,255,255,.09);
+    --blue:#1d9bf0;
+    --blue-dim:rgba(29,155,240,.16);
     --text:#f5f5f7;
     --text-dim:rgba(245,245,247,.62);
     --text-faint:rgba(245,245,247,.38);
     --mono: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
-    --sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, sans-serif;
-    --radius:14px;
+    --sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+    --radius:20px;
+    --shadow: 0 12px 34px rgba(0,0,0,.30);
+    --shadow-sm: 0 6px 18px rgba(0,0,0,.22);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--sans);height:100%;}
-  body{min-height:100vh;overflow-x:hidden;}
-  ::selection{background:var(--lime);color:#0a0a0c;}
-  a{color:var(--lime);text-decoration:none;}
+  body{min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  ::selection{background:var(--blue);color:#0a0a0c;}
+  a{color:var(--blue);text-decoration:none;}
   button{font-family:inherit;cursor:pointer;}
-
-  #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
-  #bg-canvas canvas{display:block;width:100%;height:100%;}
+  svg{display:block;}
 
   /* ---------- INTRO ---------- */
   #intro{
     position:fixed;inset:0;z-index:100;
     background:var(--bg);
-    display:flex;flex-direction:column;
-    overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:0 24px;
     transition:opacity .6s ease, filter .6s ease, transform .6s ease;
   }
-  #intro.exiting{opacity:0;filter:blur(20px);transform:scale(1.08);pointer-events:none;}
+  #intro.exiting{opacity:0;filter:blur(16px);transform:scale(1.04);pointer-events:none;}
   #intro-skip{
-    position:absolute;top:20px;right:20px;z-index:5;
+    position:absolute;top:24px;right:24px;z-index:5;
     background:transparent;border:1px solid var(--border);color:var(--text-dim);
-    padding:8px 16px;border-radius:100px;font-size:13px;letter-spacing:.02em;
+    padding:8px 16px;border-radius:100px;font-size:13px;
   }
-  #intro-skip:hover{border-color:var(--lime);color:var(--lime);}
-  #slides-track{
-    flex:1;display:flex;height:100%;width:300%;
-    transition:transform .5s cubic-bezier(.16,1,.3,1);
-    touch-action:pan-y;
-    will-change:transform;
+  #intro-skip:hover{border-color:var(--blue);color:var(--blue);}
+  #intro h1{
+    font-size:clamp(42px,8vw,80px);font-weight:700;
+    letter-spacing:-.04em;line-height:1.05;margin:0 0 18px;
+    animation:introIn .7s cubic-bezier(.19,1,.22,1) backwards;
   }
-  #slides-track.dragging{transition:none;}
-  .slide{
-    width:calc(100% / 3);height:100%;flex-shrink:0;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:0 24px;user-select:none;
+  #intro p{
+    font-size:clamp(15px,2vw,19px);color:var(--text-dim);max-width:520px;margin:0 0 36px;
+    animation:introIn .7s cubic-bezier(.19,1,.22,1) .1s backwards;
   }
-  .slide h1{
-    font-size:clamp(38px,9vw,96px);font-weight:800;text-transform:uppercase;
-    letter-spacing:-.03em;line-height:1.02;margin:0 0 20px;
+  #intro-start{animation:introIn .7s cubic-bezier(.19,1,.22,1) .2s backwards;}
+  @keyframes introIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .accent-btn{
+    background:var(--blue);color:#fff;border:none;font-weight:600;
+    padding:15px 34px;border-radius:100px;font-size:15px;letter-spacing:-.01em;
+    transition:transform .2s;
   }
-  .slide .outline{
-    -webkit-text-stroke:2px var(--lime);color:transparent;
-  }
-  .slide p{
-    font-size:clamp(15px,2.2vw,20px);color:var(--text-dim);max-width:560px;margin:0 0 32px;
-  }
-  .lime-btn{
-    background:var(--lime);color:#0a0a0c;border:none;font-weight:700;
-    padding:15px 34px;border-radius:100px;font-size:15px;letter-spacing:.02em;
-    box-shadow:0 0 40px rgba(210,255,0,.35);
-  }
-  .lime-btn:hover{transform:translateY(-1px);box-shadow:0 0 55px rgba(210,255,0,.5);}
-  #intro-progress{
-    position:absolute;bottom:64px;left:50%;transform:translateX(-50%);
-    display:flex;gap:8px;
-  }
-  #intro-progress .dash{width:32px;height:3px;background:var(--border);border-radius:2px;transition:background .3s;}
-  #intro-progress .dash.active{background:var(--lime);}
-  #intro-hint{
-    position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
-    font-family:var(--mono);font-size:12px;color:var(--text-faint);
-    animation:pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse{0%,100%{opacity:.35;}50%{opacity:1;}}
+  .accent-btn:hover{transform:translateY(-1px);}
 
-  /* ---------- APP SHELL ---------- */
-  #app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:0 20px 80px;}
+  /* ---------- APP LAYOUT (X-style 3 columns) ---------- */
   #app[hidden]{display:none;}
-  header{
-    position:sticky;top:0;z-index:20;
-    background:rgba(10,10,12,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-    border-bottom:1px solid var(--border);
-    margin:0 -20px;padding:16px 20px 0;
-  }
-  .header-row{display:flex;justify-content:space-between;align-items:baseline;}
-  .brand{font-weight:800;font-size:18px;letter-spacing:-.01em;}
-  .brand small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--lime);font-weight:600;margin-top:2px;}
-  .header-date{font-family:var(--mono);font-size:12px;color:var(--text-dim);}
-  nav.tabs{display:flex;gap:26px;margin-top:16px;}
-  nav.tabs button{
-    background:none;border:none;color:var(--text-dim);font-size:14px;font-weight:600;
-    padding:10px 0 12px;border-bottom:2px solid transparent;
-  }
-  nav.tabs button.active{color:var(--lime);border-bottom-color:var(--lime);}
-  nav.tabs button:hover{color:var(--text);}
+  #app{max-width:1250px;margin:0 auto;}
+  .layout{display:flex;align-items:flex-start;}
 
-  main{padding-top:24px;min-height:60vh;}
-  .tab-panel{display:none;animation:fadein .35s ease;}
+  .sidebar{
+    width:264px;flex-shrink:0;position:sticky;top:0;height:100vh;
+    padding:28px 18px;display:flex;flex-direction:column;
+    border-right:1px solid var(--divider);
+  }
+  .brand{font-weight:700;font-size:21px;letter-spacing:-.03em;padding:8px 16px 32px;}
+  .brand small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--blue);font-weight:600;margin-top:4px;}
+  .side-nav{display:flex;flex-direction:column;gap:6px;}
+  .nav-btn{
+    display:flex;align-items:center;gap:16px;padding:13px 16px;border-radius:16px;
+    color:var(--text-dim);font-size:16px;font-weight:500;letter-spacing:-.01em;background:none;border:none;
+    width:100%;text-align:left;transition:color .2s,background .2s;
+  }
+  .nav-btn:hover{background:rgba(255,255,255,.05);color:var(--text);}
+  .nav-btn.active{color:var(--blue);font-weight:600;}
+  .nav-btn svg{width:22px;height:22px;flex-shrink:0;stroke-width:1.6;}
+  .topic-pills{display:flex;gap:8px;}
+  .topic-pill{
+    background:var(--panel);border:1px solid var(--border);color:var(--text-dim);
+    padding:9px 20px;border-radius:999px;font-size:13.5px;font-weight:600;transition:all .2s;
+  }
+  .topic-pill:hover{border-color:rgba(255,255,255,.25);}
+  .topic-pill.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .topic-switcher-inline{display:flex;gap:8px;padding:20px 24px;border-bottom:1px solid var(--divider);}
+
+  .timeline-col{flex:1;min-width:0;max-width:620px;border-right:1px solid var(--divider);min-height:100vh;}
+  .col-header{
+    position:sticky;top:0;z-index:6;background:rgba(10,10,12,.82);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+    padding:22px 24px;border-bottom:1px solid var(--divider);
+  }
+  .col-header-title{font-size:26px;font-weight:700;letter-spacing:-.03em;}
+  .col-header-sub{font-size:12px;color:var(--text-faint);font-family:var(--mono);margin-top:4px;}
+
+  .trends-col{width:320px;flex-shrink:0;padding:28px 20px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .trends-widget{background:var(--panel);border:1px solid var(--border);border-radius:24px;padding:22px;box-shadow:var(--shadow-sm);}
+  .trends-widget h3{font-size:18px;font-weight:700;letter-spacing:-.02em;margin:0 0 4px;}
+  .trends-widget .sub{font-size:12px;color:var(--text-faint);margin:0 0 12px;}
+  .trend-item{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--divider);}
+  .trend-item:last-child{border-bottom:none;}
+  .trend-name{font-weight:600;font-size:14px;}
+  .trend-topic-tag{font-size:9.5px;color:var(--blue);margin-left:6px;font-family:var(--mono);}
+  .trend-count{color:var(--text-faint);font-size:12px;font-family:var(--mono);white-space:nowrap;}
+
+  main.timeline-col{padding-bottom:40px;}
+  .panel-inner{padding:28px 24px;}
+  .tab-panel{display:none;animation:fadein .3s ease;}
   .tab-panel.active{display:block;}
-  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes fadein{from{opacity:0;}to{opacity:1;}}
 
   /* filter chips */
-  .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .chip-row{display:flex;gap:10px;flex-wrap:wrap;padding:22px 24px 0;}
   .chip{
     background:var(--panel);border:1px solid var(--border);color:var(--text-dim);
-    padding:7px 14px;border-radius:100px;font-size:13px;font-weight:600;
-    backdrop-filter:blur(10px);
+    padding:8px 18px;border-radius:100px;font-size:13.5px;font-weight:500;transition:all .2s;
   }
-  .chip.active{background:var(--lime-dim);border-color:var(--lime);color:var(--lime);}
+  .chip.active{background:var(--blue-dim);border-color:var(--blue);color:var(--blue);font-weight:600;}
   .chip:hover{border-color:rgba(255,255,255,.2);}
 
   .refresh-pill{
-    display:inline-flex;align-items:center;gap:6px;background:var(--panel);
-    border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:100px;
-    font-size:13px;font-weight:600;margin-bottom:18px;
+    display:flex;align-items:center;gap:7px;background:none;
+    border:none;color:var(--text-faint);padding:16px 24px 6px;
+    font-size:13px;font-weight:500;
   }
-  .refresh-pill:hover{border-color:var(--lime);color:var(--lime);}
+  .refresh-pill:hover{color:var(--blue);}
   .refresh-pill.spinning svg{animation:spin 1s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
-  /* cards */
-  .card{
-    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
-    padding:18px;margin-bottom:14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    transition:border-color .2s,transform .2s;cursor:pointer;
-    animation:cardin .4s ease backwards;
-  }
-  @keyframes cardin{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-  .card:hover{border-color:rgba(210,255,0,.45);transform:translateY(-2px);box-shadow:0 0 0 1px rgba(210,255,0,.08),0 8px 30px rgba(0,0,0,.35);}
-  .post-top{display:flex;gap:12px;align-items:flex-start;}
+  /* timeline posts (continuous, X-style) */
+  .post-row{display:flex;gap:14px;padding:22px 24px;border-bottom:1px solid var(--divider);cursor:pointer;transition:background .15s;animation:rowin .35s ease backwards;}
+  @keyframes rowin{from{opacity:0;}to{opacity:1;}}
+  .post-row:hover{background:rgba(255,255,255,.02);}
   .avatar{
-    width:42px;height:42px;border-radius:11px;flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;font-weight:800;color:#0a0a0c;font-size:16px;
+    width:44px;height:44px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-weight:600;color:#0a0a0c;font-size:16px;
   }
-  .post-meta-line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:4px;}
-  .post-company{font-weight:700;font-size:14px;}
-  .badge{
-    background:var(--lime-dim);color:var(--lime);font-size:10.5px;font-weight:700;
-    padding:3px 9px;border-radius:100px;letter-spacing:.03em;text-transform:uppercase;
-  }
+  .post-body{flex:1;min-width:0;}
+  .post-meta-line{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:3px;}
+  .post-company{font-weight:600;font-size:15px;letter-spacing:-.01em;}
   .post-source{font-family:var(--mono);font-size:11px;color:var(--text-faint);}
-  .post-headline{font-size:16.5px;font-weight:700;margin:6px 0 6px;line-height:1.35;}
-  .post-why{font-size:14px;color:var(--text-dim);line-height:1.55;margin:0 0 10px;}
-  .post-media{width:100%;border-radius:10px;overflow:hidden;margin-bottom:10px;aspect-ratio:16/9;background:#111;}
+  .badge-topic{border:1px solid var(--blue);color:var(--blue);font-size:10px;font-weight:600;padding:2px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:.03em;}
+  .badge-category{color:var(--text-faint);font-size:12px;}
+  .post-headline{font-size:17px;font-weight:600;letter-spacing:-.01em;margin:5px 0 6px;line-height:1.35;}
+  .post-why{font-size:14.5px;color:var(--text-dim);line-height:1.6;margin:0 0 14px;font-weight:400;}
+  .post-media{width:100%;border-radius:22px;overflow:hidden;margin-bottom:10px;aspect-ratio:16/9;background:#111;border:1px solid var(--divider);box-shadow:var(--shadow-sm);}
   .post-media img{width:100%;height:100%;object-fit:cover;display:block;}
-  .post-media-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;color:rgba(0,0,0,.35);}
-  .hashtags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
-  .hashtag{font-family:var(--mono);font-size:11px;color:var(--lime);opacity:.85;}
-  .hover-hint{font-size:12px;color:var(--text-faint);opacity:0;transition:opacity .2s;}
-  .card:hover .hover-hint{opacity:1;}
+  .post-media-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:rgba(0,0,0,.35);}
+  .hashtags{display:flex;flex-wrap:wrap;gap:6px;}
+  .hashtag{font-family:var(--mono);font-size:11px;color:var(--blue);opacity:.85;}
 
-  .compact-post{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;}
-  .compact-post:hover .post-headline{color:var(--lime);}
-  .compact-post:last-child{border-bottom:none;}
+  .compact-post{display:flex;flex-direction:column;gap:3px;padding:16px 24px;border-bottom:1px solid var(--divider);cursor:pointer;}
+  .compact-post:hover .post-headline{color:var(--blue);}
+  .compact-post .post-headline{font-size:14.5px;font-weight:600;margin:3px 0 0;}
 
   /* skeleton */
-  .skeleton{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
-  .shimmer{background:linear-gradient(90deg, rgba(255,255,255,.05) 25%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.05) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;}
+  .skeleton{padding:22px 24px;border-bottom:1px solid var(--divider);}
+  .shimmer{background:linear-gradient(90deg, rgba(255,255,255,.05) 25%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.05) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;}
   @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
   .sk-line{height:12px;margin-bottom:8px;}
   .sk-line.w60{width:60%;}
   .sk-line.w90{width:90%;}
-  .sk-media{height:160px;border-radius:10px;margin-bottom:10px;}
+  .sk-media{height:170px;border-radius:22px;margin-bottom:12px;}
 
-  .error-box{background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.3);border-radius:var(--radius);padding:20px;text-align:center;}
+  .error-box{padding:24px;text-align:center;}
   .error-box p{color:var(--text-dim);margin:0 0 14px;}
-  .empty-box{background:var(--panel);border:1px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;color:var(--text-dim);font-size:14px;}
+  .empty-box{padding:36px 24px;text-align:center;color:var(--text-dim);font-size:14.5px;}
 
-  h2.section-title{font-size:22px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px;}
-  p.section-sub{color:var(--text-dim);font-size:14px;margin:0 0 20px;}
+  h2.section-title{font-size:26px;font-weight:700;letter-spacing:-.03em;margin:0 0 6px;}
+  p.section-sub{color:var(--text-dim);font-size:14px;margin:0 0 20px;font-weight:400;}
 
   /* Einstieg */
-  .einstieg-block{margin-bottom:36px;}
-  .einstieg-hint{background:var(--lime-dim);border:1px solid rgba(210,255,0,.35);border-radius:var(--radius);padding:16px 18px;font-size:14px;color:var(--text);margin-bottom:26px;}
+  .einstieg-block{margin-bottom:16px;}
+  .einstieg-hint{background:var(--blue-dim);border:1px solid rgba(29,155,240,.35);border-radius:var(--radius);padding:18px 20px;font-size:14px;line-height:1.5;color:var(--text);margin-bottom:28px;}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .num-badge{
-    width:26px;height:26px;border-radius:8px;background:var(--lime);color:#0a0a0c;
-    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;
+    width:26px;height:26px;border-radius:9px;background:var(--blue);color:#0a0a0c;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;flex-shrink:0;
   }
-  .simple-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .2s,transform .2s;}
-  .simple-card:hover{border-color:rgba(210,255,0,.45);transform:translateY(-2px);}
-  .simple-card h3{font-size:15px;margin:0 0 6px;font-weight:700;}
-  .simple-card p{font-size:13px;color:var(--text-dim);margin:0;line-height:1.5;}
-  .simple-card .row{display:flex;gap:10px;align-items:flex-start;}
+  .simple-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;margin-bottom:12px;}
+  .simple-card:hover{border-color:rgba(29,155,240,.45);transform:translateY(-2px);box-shadow:var(--shadow-sm);}
+  .simple-card h3{font-size:15.5px;letter-spacing:-.01em;margin:0 0 5px;font-weight:600;}
+  .simple-card p{font-size:13px;color:var(--text-dim);margin:0;line-height:1.55;}
+  .simple-card .row{display:flex;gap:12px;align-items:flex-start;}
 
-  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:8px;}
   .glossary-chip{
-    background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:14px;cursor:pointer;
-    transition:border-color .2s,transform .2s;
+    background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;
+    transition:border-color .2s,transform .2s,box-shadow .2s;
   }
-  .glossary-chip:hover{border-color:var(--lime);transform:translateY(-2px);}
-  .glossary-chip strong{font-size:14px;}
+  .glossary-chip:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow-sm);}
+  .glossary-chip strong{font-size:14px;letter-spacing:-.01em;}
 
-  /* Modelle */
-  .model-card{display:flex;gap:12px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color .2s,transform .2s;}
-  .model-card:hover{border-color:rgba(210,255,0,.45);transform:translateY(-2px);}
-  .model-card h3{margin:0;font-size:15px;}
-  .model-card .dev{font-size:11.5px;color:var(--text-faint);font-family:var(--mono);margin-bottom:6px;}
-  .model-card p{font-size:13px;color:var(--text-dim);margin:0 0 8px;line-height:1.45;}
-  .usecase-chips{display:flex;flex-wrap:wrap;gap:5px;}
-  .usecase-chip{font-size:10.5px;background:rgba(255,255,255,.06);color:var(--text-dim);padding:3px 8px;border-radius:100px;}
+  /* Nachschlagewerk */
+  .ref-row{display:flex;flex-direction:column;gap:4px;padding:20px 24px;border-bottom:1px solid var(--divider);cursor:pointer;transition:background .15s;}
+  .ref-row:hover{background:rgba(255,255,255,.02);}
+  .ref-row:hover h3{color:var(--blue);}
+  .ref-row-top{display:flex;align-items:baseline;gap:10px;}
+  .ref-row h3{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em;color:var(--text);transition:color .15s;}
+  .ref-row .dev{font-size:12.5px;color:var(--text-faint);}
+  .ref-row .chev{margin-left:auto;color:var(--text-faint);flex-shrink:0;}
+  .ref-row p{font-size:13.5px;color:var(--text-dim);margin:2px 0 0;line-height:1.5;}
+  .ref-best{font-size:13px;color:var(--blue);margin:4px 0 0;}
+  .ref-best b{font-weight:600;}
+  .usecase-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .usecase-chip{font-size:10.5px;background:rgba(255,255,255,.06);color:var(--text-dim);padding:4px 10px;border-radius:100px;}
 
   /* Archive */
-  .day-group{margin-bottom:22px;}
-  .day-header{font-family:var(--mono);font-size:12.5px;color:var(--lime);margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .day-group{}
+  .day-header{font-family:var(--mono);font-size:12px;color:var(--blue);padding:20px 24px 10px;border-bottom:1px solid var(--divider);}
 
   /* Sheet */
-  #sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;}
+  #sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(10px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;}
   #sheet-backdrop.open{opacity:1;pointer-events:auto;}
   #sheet{
     position:fixed;left:0;right:0;bottom:0;z-index:201;max-height:88vh;
-    background:var(--panel-solid);border-top:1px solid var(--border);border-radius:22px 22px 0 0;
-    transform:translateY(100%);transition:transform .38s cubic-bezier(.16,1,.3,1);
-    overflow-y:auto;padding:22px 24px 40px;max-width:920px;margin:0 auto;
+    background:var(--panel-solid);border-top:1px solid var(--border);border-radius:32px 32px 0 0;
+    transform:translateY(100%);transition:transform .4s cubic-bezier(.19,1,.22,1);
+    overflow-y:auto;padding:28px 28px 48px;max-width:620px;margin:0 auto;
+    box-shadow:0 -20px 60px rgba(0,0,0,.4);
   }
   #sheet.open{transform:translateY(0);}
   #sheet-close{
-    position:sticky;top:0;float:right;background:rgba(255,255,255,.06);border:none;color:var(--text);
-    width:32px;height:32px;border-radius:50%;font-size:16px;margin-bottom:10px;
+    position:sticky;top:0;float:right;background:rgba(255,255,255,.07);border:none;color:var(--text);
+    width:34px;height:34px;border-radius:50%;font-size:16px;margin-bottom:12px;
   }
-  #sheet-close:hover{background:rgba(210,255,0,.2);color:var(--lime);}
+  #sheet-close:hover{background:rgba(29,155,240,.2);color:var(--blue);}
   #sheet-content{clear:both;}
-  #sheet-content h4.kicker{color:var(--lime);font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:20px 0 8px;}
+  #sheet-content h4.kicker{color:var(--blue);font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;margin:24px 0 10px;}
   #sheet-content h4.kicker:first-child{margin-top:0;}
-  #sheet-content h2{font-size:22px;margin:0 0 12px;}
-  #sheet-content p{font-size:14.5px;line-height:1.65;color:var(--text-dim);margin:0 0 10px;}
-  #sheet-content ul{margin:0 0 10px;padding-left:20px;color:var(--text-dim);font-size:14.5px;line-height:1.6;}
-  #sheet-content .merksatz{background:var(--lime-dim);border-left:3px solid var(--lime);padding:12px 14px;border-radius:8px;font-size:14px;color:var(--text);margin:14px 0;}
-  #sheet-content .chip-mini{display:inline-block;font-size:11px;background:rgba(255,255,255,.07);color:var(--text-dim);padding:3px 9px;border-radius:100px;margin:0 6px 6px 0;}
-  .spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--lime);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:10px;}
+  #sheet-content h2{font-size:25px;font-weight:700;letter-spacing:-.02em;margin:0 0 14px;}
+  #sheet-content h3.sub-heading{font-size:18px;font-weight:700;letter-spacing:-.02em;margin:28px 0 4px;}
+  #sheet-content p{font-size:15px;line-height:1.7;color:var(--text-dim);margin:0 0 12px;font-weight:400;}
+  #sheet-content ul{margin:0 0 12px;padding-left:20px;color:var(--text-dim);font-size:15px;line-height:1.65;}
+  #sheet-content .merksatz{background:var(--blue-dim);border-left:3px solid var(--blue);padding:14px 16px;border-radius:14px;font-size:14.5px;color:var(--text);margin:16px 0;}
+  #sheet-content .chip-mini{display:inline-block;font-size:11px;background:rgba(255,255,255,.07);color:var(--text-dim);padding:4px 11px;border-radius:100px;margin:0 6px 6px 0;}
+  .spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:10px;}
   .sheet-loading{display:flex;align-items:center;color:var(--text-dim);font-size:14px;padding:30px 0;}
-  .sheet-media{width:100%;border-radius:12px;overflow:hidden;margin-bottom:16px;aspect-ratio:16/9;background:#111;}
+  .sheet-media{width:100%;border-radius:22px;overflow:hidden;margin-bottom:20px;aspect-ratio:16/9;background:#111;}
   .sheet-media img{width:100%;height:100%;object-fit:cover;}
 
-  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-faint);line-height:1.6;}
+  footer{padding:24px 20px 100px;font-size:12px;color:var(--text-faint);line-height:1.6;}
 
-  @media (max-width:640px){
+  /* Bottom nav (mobile) */
+  .bottom-nav{display:none;}
+
+  @media (max-width:1100px){
+    .trends-col{display:none;}
+  }
+  @media (max-width:1100px) and (min-width:701px){
+    .sidebar{width:84px;}
+    .brand small,.nav-btn .label{display:none;}
+    .brand{text-align:center;padding:8px 0 20px;}
+    .nav-btn{justify-content:center;padding:12px;}
+  }
+  @media (max-width:700px){
+    .sidebar{display:none;}
+    .timeline-col{max-width:none;border-right:none;}
+    .bottom-nav{
+      display:flex;position:fixed;bottom:0;left:0;right:0;z-index:50;
+      background:rgba(10,10,12,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+      border-top:1px solid var(--divider);justify-content:space-around;
+      padding:8px 0 calc(6px + env(safe-area-inset-bottom));
+    }
+    .bottom-nav button{background:none;border:none;color:var(--text-dim);padding:6px 16px;}
+    .bottom-nav button.active{color:var(--blue);}
+    .bottom-nav svg{width:24px;height:24px;}
+    #app{padding-bottom:0;}
     .grid{grid-template-columns:1fr;}
-    #app{padding:0 14px 80px;}
-    header{margin:0 -14px;padding:14px 14px 0;}
-    nav.tabs{gap:18px;overflow-x:auto;}
-    .model-card{flex-direction:column;}
+    footer{padding-bottom:90px;}
   }
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
@@ -260,109 +287,128 @@
 </head>
 <body>
 
-<div id="bg-canvas"></div>
-
 <div id="intro">
   <button id="intro-skip">Überspringen</button>
-  <div id="slides-track">
-    <div class="slide">
-      <h1>Signal<br><span class="outline">AI Intelligence</span></h1>
-      <p>Dein privates KI-Dashboard — ohne Social Media täglich im Bild.</p>
-    </div>
-    <div class="slide">
-      <h1><span class="outline">Klarheit</span> statt Rauschen</h1>
-      <p>Kurze Posts für den Überblick, ein Klick öffnet die Tiefenanalyse.</p>
-    </div>
-    <div class="slide">
-      <h1>Los geht's</h1>
-      <p>Drei Minuten, und du bist im Bild.</p>
-      <button class="lime-btn" id="intro-start">Los geht's →</button>
-    </div>
-  </div>
-  <div id="intro-progress">
-    <div class="dash active"></div><div class="dash"></div><div class="dash"></div>
-  </div>
-  <div id="intro-hint">← Wischen oder ziehen →</div>
+  <h1>NewSync</h1>
+  <p>Ein Ort für KI und Finanzen — kuratierte News, Tiefenanalysen und ein Nachschlagewerk, ganz ohne Social Media.</p>
+  <button class="accent-btn" id="intro-start">Los geht's</button>
 </div>
 
 <div id="app" hidden>
-  <header>
-    <div class="header-row">
-      <div class="brand">Signal<small>AI INTELLIGENCE</small></div>
-      <div class="header-date" id="header-date"></div>
-    </div>
-    <nav class="tabs">
-      <button data-tab="feed" class="active">Feed</button>
-      <button data-tab="einstieg">Einstieg</button>
-      <button data-tab="archiv">Archiv</button>
-      <button data-tab="modelle">Modelle</button>
-    </nav>
-  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">NewSync<small>NEWSYNC</small></div>
+      <nav class="side-nav">
+        <button class="nav-btn active" data-tab="feed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+          <span class="label">Feed</span>
+        </button>
+        <button class="nav-btn" data-tab="einstieg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="label">Einstieg</span>
+        </button>
+        <button class="nav-btn" data-tab="archiv">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          <span class="label">Archiv</span>
+        </button>
+        <button class="nav-btn" data-tab="nachschlagewerk">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span class="label">Wegweiser</span>
+        </button>
+      </nav>
+    </aside>
 
-  <main>
-    <!-- FEED -->
-    <section class="tab-panel active" id="tab-feed">
-      <button class="refresh-pill" id="feed-refresh">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg>
-        Feed aktualisieren
-      </button>
-      <div class="chip-row" id="feed-filters">
-        <button class="chip active" data-filter="Alle">Alle</button>
-        <button class="chip" data-filter="Modelle & Tools">Modelle &amp; Tools</button>
-        <button class="chip" data-filter="Business">Business</button>
-        <button class="chip" data-filter="Forschung">Forschung</button>
-        <button class="chip" data-filter="Politik">Politik</button>
+    <main class="timeline-col">
+      <div class="col-header">
+        <div class="col-header-title" id="col-title">Feed</div>
+        <div class="col-header-sub" id="header-date"></div>
       </div>
-      <div id="feed-list"></div>
-    </section>
 
-    <!-- EINSTIEG -->
-    <section class="tab-panel" id="tab-einstieg">
-      <div class="einstieg-hint">Ganz neu beim Thema? Lies die 6 Karten der Reihe nach — danach verstehst du jede Meldung im Feed.</div>
-      <div class="einstieg-block">
-        <h2 class="section-title">KI in 5 Minuten</h2>
-        <p class="section-sub">Die Grundlagen, der Reihe nach.</p>
-        <div id="einstieg-grundlagen"></div>
-      </div>
-      <div class="einstieg-block">
-        <h2 class="section-title">Erste Schritte</h2>
-        <p class="section-sub">Praktisch loslegen.</p>
-        <div class="grid" id="einstieg-schritte"></div>
-      </div>
-      <div class="einstieg-block">
-        <h2 class="section-title">Begriffe, die dir überall begegnen</h2>
-        <p class="section-sub">Kurzes Glossar zum Nachschlagen.</p>
-        <div class="glossary-grid" id="einstieg-glossar"></div>
-      </div>
-      <p style="font-size:12px;color:var(--text-faint);">Kuratierte Grundlagen — Stand beim Erstellen der Seite.</p>
-    </section>
+      <section class="tab-panel active" id="tab-feed">
+        <div class="chip-row" id="feed-filters">
+          <button class="chip active" data-filter="Alle">Alle</button>
+          <button class="chip" data-filter="ki">KI</button>
+          <button class="chip" data-filter="finanzen">Finanzen</button>
+        </div>
+        <button class="refresh-pill" id="feed-refresh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg>
+          Feed aktualisieren
+        </button>
+        <div id="feed-list"></div>
+      </section>
 
-    <!-- ARCHIV -->
-    <section class="tab-panel" id="tab-archiv">
-      <button class="refresh-pill" id="weekly-review-btn" style="background:var(--lime-dim);border-color:var(--lime);color:var(--lime);">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19h16M4 15l4-4 4 4 6-8"/></svg>
-        Wochenrückblick erstellen
-      </button>
-      <div id="archive-list"></div>
-    </section>
+      <section class="tab-panel" id="tab-einstieg">
+        <div class="topic-switcher-inline">
+          <button class="topic-pill active" data-topic="ki">KI</button>
+          <button class="topic-pill" data-topic="finanzen">Finanzen</button>
+        </div>
+        <div class="panel-inner">
+          <div class="einstieg-hint" id="einstieg-hint"></div>
+          <div class="einstieg-block">
+            <h2 class="section-title" id="einstieg-grundlagen-title">In 5 Minuten</h2>
+            <p class="section-sub">Die Grundlagen, der Reihe nach.</p>
+            <div id="einstieg-grundlagen"></div>
+          </div>
+          <div class="einstieg-block">
+            <h2 class="section-title">Erste Schritte</h2>
+            <p class="section-sub">Praktisch loslegen.</p>
+            <div class="grid" id="einstieg-schritte"></div>
+          </div>
+          <div class="einstieg-block">
+            <h2 class="section-title">Begriffe, die dir überall begegnen</h2>
+            <p class="section-sub">Kurzes Glossar zum Nachschlagen.</p>
+            <div class="glossary-grid" id="einstieg-glossar"></div>
+          </div>
+          <p style="font-size:12px;color:var(--text-faint);">Kuratierte Grundlagen — Stand beim Erstellen der Seite.</p>
+        </div>
+      </section>
 
-    <!-- MODELLE -->
-    <section class="tab-panel" id="tab-modelle">
-      <div class="chip-row" id="model-filters">
-        <button class="chip active" data-filter="Alle">Alle</button>
-        <button class="chip" data-filter="Text">Text</button>
-        <button class="chip" data-filter="Open Source">Open Source</button>
-        <button class="chip" data-filter="Bild">Bild</button>
-        <button class="chip" data-filter="Video">Video</button>
-        <button class="chip" data-filter="Audio">Audio</button>
+      <section class="tab-panel" id="tab-archiv">
+        <div style="padding:14px 20px 0;">
+          <button class="refresh-pill" id="weekly-review-btn" style="background:var(--blue-dim);border:1px solid var(--blue);color:var(--blue);border-radius:100px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19h16M4 15l4-4 4 4 6-8"/></svg>
+            Wochenrückblick
+          </button>
+        </div>
+        <div id="archive-list"></div>
+      </section>
+
+      <section class="tab-panel" id="tab-nachschlagewerk">
+        <div class="topic-switcher-inline">
+          <button class="topic-pill active" data-topic="ki">KI</button>
+          <button class="topic-pill" data-topic="finanzen">Finanzen</button>
+        </div>
+        <div id="model-list"></div>
+      </section>
+
+      <footer>
+        NewSync ist ein privater Prototyp. Inhalte werden automatisch recherchiert und von Claude erzeugt und mehrmals täglich aktualisiert — Wichtiges bitte an der Originalquelle prüfen.
+      </footer>
+    </main>
+
+    <aside class="trends-col">
+      <div class="trends-widget">
+        <h3>Meistgenannt</h3>
+        <p class="sub">Letzte 7 Tage, aus echten Archivdaten</p>
+        <div id="trends-list"></div>
       </div>
-      <div class="grid" id="model-list"></div>
-    </section>
-  </main>
+    </aside>
+  </div>
 
-  <footer>
-    Signal ist ein privater Prototyp. Inhalte werden automatisch recherchiert und von Claude erzeugt und mehrmals täglich aktualisiert — Wichtiges bitte an der Originalquelle prüfen.
-  </footer>
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="feed">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+    </button>
+    <button class="nav-btn" data-tab="einstieg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    </button>
+    <button class="nav-btn" data-tab="archiv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    </button>
+    <button class="nav-btn" data-tab="nachschlagewerk">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    </button>
+  </nav>
 </div>
 
 <div id="sheet-backdrop"></div>
@@ -371,10 +417,9 @@
   <div id="sheet-content"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="window.__THREE_FAILED__=true"></script>
 <script>
 /* ============================================================
-   DATA: Einstieg (statisch, versionsneutral)
+   DATA: Einstieg — KI (statisch, versionsneutral)
    ============================================================ */
 const GRUNDLAGEN = [
   {
@@ -448,9 +493,9 @@ const GRUNDLAGEN = [
 const ERSTE_SCHRITTE = [
   {
     title:"Welches Tool zum Starten?",
-    teaser:"Es gibt nicht „das eine richtige” — schau dir die Übersicht im Modelle-Tab an.",
+    teaser:"Es gibt nicht „das eine richtige” — schau dir die Übersicht im Nachschlagewerk an.",
     paragraphs:[
-      "Für den täglichen Einstieg reicht ein einziges gutes Textmodell völlig aus — im Modelle-Tab findest du eine kuratierte Übersicht der bekanntesten Anbieter mit Stärken, Schwächen und typischen Einsatzzwecken.",
+      "Für den täglichen Einstieg reicht ein einziges gutes Textmodell völlig aus — im Nachschlagewerk findest du eine kuratierte Übersicht der bekanntesten Anbieter mit Stärken, Schwächen und typischen Einsatzzwecken.",
       "Als Faustregel: Für Alltagsfragen und Schreiben ist praktisch jedes große Modell geeignet. Für Programmieren oder lange Dokumente lohnt sich ein Blick auf Modelle mit großem Kontextfenster und starkem Reasoning.",
       "Am wichtigsten ist nicht die „perfekte” Wahl, sondern überhaupt anzufangen — die meisten Tools lassen sich kostenlos ausprobieren, bevor man sich festlegt."
     ],
@@ -509,7 +554,142 @@ const GLOSSAR = [
 ];
 
 /* ============================================================
-   DATA: Modelle (kuratiert, statisch, versionsneutral)
+   DATA: Einstieg — Finanzen (statisch, versionsneutral)
+   ============================================================ */
+const FINANZEN_GRUNDLAGEN = [
+  {
+    title:"Was ist Investieren?",
+    teaser:"Geld arbeiten lassen, statt es nur zu horten.",
+    paragraphs:[
+      "Investieren bedeutet, Geld heute in etwas zu stecken (Aktien, Anleihen, Immobilien, ein Unternehmen), in der Erwartung, dass es über Zeit mehr wert wird oder Erträge abwirft. Das unterscheidet es vom reinen Sparen, bei dem Geld einfach beiseitegelegt wird.",
+      "Der Grund, warum das langfristig oft funktioniert: Unternehmen wachsen, erwirtschaften Gewinne, und ein Teil davon fließt an Menschen, die Anteile daran besitzen — als steigender Wert oder als Ausschüttung.",
+      "Der Preis dafür ist Unsicherheit: Werte können zwischenzeitlich fallen, manchmal deutlich. Wer investiert, tauscht also Sicherheit gegen die Chance auf höhere Erträge über einen längeren Zeitraum.",
+      "Genau deshalb eignet sich Investieren eher für Geld, das man länger nicht braucht — nicht für den Notgroschen für nächsten Monat."
+    ],
+    merksatz:"Investieren ist der Tausch von kurzfristiger Sicherheit gegen langfristige Wachstumschance."
+  },
+  {
+    title:"Aktien, Anleihen, ETFs — was ist der Unterschied?",
+    teaser:"Drei Grundbausteine, die man ständig hört.",
+    paragraphs:[
+      "Eine Aktie ist ein kleiner Besitzanteil an einem Unternehmen. Steigt der Unternehmenswert, steigt (in der Regel) auch der Aktienkurs — und manche Unternehmen zahlen zusätzlich einen Teil des Gewinns als Dividende aus.",
+      "Eine Anleihe ist im Grunde ein Kredit: Du leihst einem Staat oder Unternehmen Geld und bekommst dafür über die Laufzeit Zinsen, am Ende die Kreditsumme zurück. Meist schwankt der Wert weniger stark als bei Aktien, dafür ist die Renditechance geringer.",
+      "Ein ETF (Exchange Traded Fund) bündelt viele einzelne Aktien oder Anleihen in einem einzigen Produkt, das man wie eine einzelne Aktie kaufen kann. Damit kauft man mit einem Klick automatisch ein ganzes Körbchen — das streut das Risiko.",
+      "Für Einsteiger sind breite ETFs oft der pragmatischste Startpunkt, weil man nicht einzelne Unternehmen auswählen muss."
+    ],
+    merksatz:"Aktie = Anteil, Anleihe = Kredit, ETF = ein Korb aus vielen davon in einem Produkt."
+  },
+  {
+    title:"Zins und Zinseszins einfach erklärt",
+    teaser:"Der stille Motor, der aus wenig über Zeit viel macht.",
+    paragraphs:[
+      "Zins ist die Vergütung dafür, dass jemand Geld verleiht oder anlegt — ein Prozentsatz, der regelmäßig auf die angelegte Summe dazukommt.",
+      "Zinseszins bedeutet: Die Zinsen selbst werden mitangelegt und erwirtschaften ab dann ebenfalls Zinsen. Dadurch wächst ein Betrag nicht linear, sondern zunehmend schneller, je länger die Zeit läuft.",
+      "Ein einfaches Beispiel: 1.000 € bei 7 % Rendite pro Jahr werden nach 10 Jahren rund 1.967 €, nach 20 Jahren aber schon rund 3.870 € — die zweiten 10 Jahre bringen fast doppelt so viel wie die ersten.",
+      "Deshalb ist Zeit im Markt oft wichtiger als der perfekte Einstiegszeitpunkt: Der Zinseszins-Effekt braucht vor allem eins — Geduld."
+    ],
+    merksatz:"Zinseszins wirkt wie ein Schneeball: Am Anfang klein, mit Zeit erstaunlich groß."
+  },
+  {
+    title:"Risiko und Diversifikation",
+    teaser:"Nicht alle Eier in einen Korb legen.",
+    paragraphs:[
+      "Risiko bedeutet hier vor allem: Wie stark schwankt ein Investment, und wie hoch ist die Chance eines dauerhaften Verlusts? Höhere erwartete Rendite geht meist mit höherem Risiko einher.",
+      "Diversifikation heißt, Geld auf viele verschiedene Anlagen zu verteilen (unterschiedliche Unternehmen, Branchen, Länder, Anlageklassen), damit der Ausfall oder Absturz einer einzelnen Position nicht das ganze Vermögen gefährdet.",
+      "Ein breiter ETF ist bereits eine Form von Diversifikation, weil er automatisch Hunderte oder Tausende Unternehmen enthält, statt auf eine einzelne Aktie zu setzen.",
+      "Diversifikation verhindert keine Verluste in schlechten Marktphasen insgesamt, reduziert aber das Risiko, dass eine einzelne Fehlentscheidung existenzbedrohend wird."
+    ],
+    merksatz:"Streuung schützt nicht vor Marktschwankungen, aber vor dem Klumpenrisiko einer einzelnen Wette."
+  },
+  {
+    title:"Inflation einfach erklärt",
+    teaser:"Warum Geld unter dem Kopfkissen langsam an Wert verliert.",
+    paragraphs:[
+      "Inflation beschreibt, wie stark die Preise für Waren und Dienstleistungen über Zeit im Durchschnitt steigen. Steigt die Inflation, bekommt man für denselben Geldbetrag im Lauf der Zeit weniger.",
+      "Das betrifft auch Erspartes: Liegt Geld unverzinst oder niedrig verzinst herum, während die Preise steigen, sinkt die reale Kaufkraft — man kann sich mit derselben Summe später weniger leisten.",
+      "Investitionen mit Renditechancen über der Inflationsrate sind ein Weg, die Kaufkraft des eigenen Vermögens über lange Zeiträume zu erhalten oder zu steigern.",
+      "Wichtig zu wissen: Inflation schwankt über die Jahre stark, deshalb ist ein Puffer an sofort verfügbarem Geld weiterhin sinnvoll, unabhängig von Investitionen."
+    ],
+    merksatz:"Wer nur „sicher” liegen lässt, verliert real oft trotzdem Kaufkraft — durch Inflation."
+  },
+  {
+    title:"Marktzyklen grob verstehen (Bulle & Bär)",
+    teaser:"Märkte bewegen sich in Phasen, nicht geradlinig nach oben.",
+    paragraphs:[
+      "Ein „Bullenmarkt” beschreibt eine längere Phase steigender Kurse und wachsenden Optimismus’ — Anleger erwarten weiteres Wachstum, das Kapital fließt in Richtung riskanterer Anlagen.",
+      "Ein „Bärenmarkt” ist das Gegenteil: eine längere Phase fallender Kurse, oft begleitet von Verunsicherung oder wirtschaftlichen Sorgen.",
+      "Solche Zyklen sind historisch normal und wiederkehrend — auf jede Abschwungphase folgte bislang wieder eine Erholung, auch wenn der Zeitpunkt nie vorher feststeht.",
+      "Wer das weiß, lässt sich von einzelnen schlechten Monaten oder Jahren weniger aus der Ruhe bringen, sofern der Anlagehorizont ohnehin langfristig ist."
+    ],
+    merksatz:"Auf- und Abschwung gehören zum Markt dazu — die Geschichte zeigt bislang immer wieder Erholung danach."
+  }
+];
+
+const FINANZEN_ERSTE_SCHRITTE = [
+  {
+    title:"Wie fange ich an? (Depot & ETF-Sparplan)",
+    teaser:"Der pragmatischste Einstieg für die meisten Menschen.",
+    paragraphs:[
+      "Der technische Grundschritt: ein Wertpapierdepot bei einer Bank oder einem Online-Broker eröffnen — das ist im Kern ein Konto, auf dem Wertpapiere statt nur Bargeld liegen.",
+      "Ein weit verbreiteter Einstieg ist ein ETF-Sparplan: monatlich ein fester, kleiner Betrag fließt automatisch in einen breiten ETF — ganz ohne Einzelaktien auswählen zu müssen.",
+      "Das hat den Nebeneffekt, automatisch zu unterschiedlichen Kursniveaus zu kaufen (mal teurer, mal günstiger), was den Einfluss eines einzelnen „falschen” Einstiegszeitpunkts abmildert.",
+      "Vor dem ersten Euro lohnt sich trotzdem ein Blick auf Gebühren des Depots und des gewählten ETFs — kleine Unterschiede summieren sich über Jahrzehnte."
+    ],
+    merksatz:"Depot eröffnen, breiten ETF wählen, automatisiert und regelmäßig investieren — mehr braucht der Einstieg oft nicht."
+  },
+  {
+    title:"Typische Anfängerfehler",
+    teaser:"Die häufigsten Stolpersteine — und wie man sie vermeidet.",
+    paragraphs:[
+      "In Panik verkaufen, wenn die Kurse fallen: Wer bei jedem Rückgang aussteigt, verwandelt einen zwischenzeitlichen Buchverlust in einen echten Verlust — und verpasst oft die anschließende Erholung.",
+      "Ohne Plan auf Einzeltipps setzen: Geld auf einzelne „heiße” Aktien oder Trends zu konzentrieren, statt breit zu streuen, erhöht das Risiko deutlich.",
+      "Kurzfristig investieren, was man bald braucht: Geld für die Miete nächsten Monat gehört nicht in schwankende Anlagen, sondern auf ein sofort verfügbares Konto.",
+      "Gebühren ignorieren: Hohe laufende Kosten fressen über Jahrzehnte einen überraschend großen Teil der Rendite auf."
+    ],
+    merksatz:"Die teuersten Fehler sind meist emotional (Panikverkäufe) oder strukturell (keine Streuung, hohe Gebühren)."
+  },
+  {
+    title:"Dein Risikoprofil verstehen",
+    teaser:"Nicht jede Anlage passt zu jeder Lebenssituation.",
+    paragraphs:[
+      "Das eigene Risikoprofil hängt von mehreren Faktoren ab: Wie lange kann das Geld liegen bleiben? Wie stark würden Kursverluste die eigene Ruhe stören? Gibt es einen finanziellen Puffer für Notfälle?",
+      "Ein langer Anlagehorizont (viele Jahre bis Jahrzehnte) erlaubt in der Regel, mehr Schwankung auszuhalten, weil Zeit für Erholungsphasen bleibt.",
+      "Ein kurzer Horizont oder ein fehlender Notgroschen sprechen eher für einen größeren Anteil an ruhigeren, weniger schwankenden Anlagen.",
+      "Es gibt kein „richtiges” Risikoprofil für alle — nur eins, das zur eigenen Situation und zum eigenen Schlaf passt."
+    ],
+    merksatz:"Anlagehorizont und persönliche Risikotoleranz bestimmen die passende Mischung — nicht ein allgemeines Rezept."
+  },
+  {
+    title:"5 Aufgaben zum Ausprobieren",
+    teaser:"Klein anfangen, direkt ein Gefühl entwickeln.",
+    paragraphs:[
+      "1) Rechne aus, wie sich ein monatlicher Betrag deiner Wahl über 20 Jahre bei angenommenen 6-7 % Rendite pro Jahr entwickeln würde (Zinseszins-Rechner).",
+      "2) Schau dir an, welche Gebühren dein aktuelles Konto/Depot (falls vorhanden) für Wertpapierkäufe verlangt.",
+      "3) Lies dir die Zusammensetzung eines breiten Welt-ETFs durch, um zu verstehen, in wie viele Unternehmen ein einziger Kauf tatsächlich investiert.",
+      "4) Überlege ehrlich, wie lange du ein bestimmtes Geld wirklich nicht brauchst — das bestimmt, wie viel Risiko überhaupt sinnvoll ist.",
+      "5) Sprich mit jemandem, der schon investiert, über dessen größten Anfängerfehler — die Muster wiederholen sich meistens."
+    ],
+    merksatz:"Ein Zinseszins-Rechner und 10 Minuten Zeit geben oft mehr Klarheit als jeder Ratgeber."
+  }
+];
+
+const FINANZEN_GLOSSAR = [
+  {term:"Aktie", def:"Ein kleiner Besitzanteil an einem Unternehmen. Beispiel: Wer eine Aktie eines Unternehmens besitzt, profitiert (anteilig) von dessen Wertsteigerung."},
+  {term:"Anleihe", def:"Ein verzinster Kredit an einen Staat oder ein Unternehmen mit fester Laufzeit. Beispiel: Eine Staatsanleihe zahlt über Jahre Zinsen und am Ende die Kreditsumme zurück."},
+  {term:"ETF", def:"„Exchange Traded Fund” — ein Fonds, der einen ganzen Korb an Wertpapieren bündelt und wie eine einzelne Aktie gehandelt wird. Beispiel: Ein Welt-ETF enthält Tausende Unternehmen in einem Produkt."},
+  {term:"Dividende", def:"Ein Teil des Unternehmensgewinns, der an die Aktionäre ausgeschüttet wird. Beispiel: Manche Unternehmen zahlen einmal im Jahr eine Dividende pro gehaltener Aktie."},
+  {term:"Volatilität", def:"Wie stark und wie schnell der Kurs einer Anlage schwankt. Beispiel: Kryptowährungen gelten als besonders volatil, Tagesgeld kaum."},
+  {term:"Diversifikation", def:"Geld auf viele unterschiedliche Anlagen verteilen, um das Risiko einer einzelnen Position abzufedern. Beispiel: Statt einer Aktie einen breiten ETF kaufen."},
+  {term:"Zinseszins", def:"Wenn bereits erhaltene Zinsen selbst wieder mitverzinst werden. Beispiel: Über Jahrzehnte wächst dadurch ein Betrag zunehmend schneller."},
+  {term:"Inflation", def:"Der allgemeine Anstieg der Preise über Zeit, wodurch Geld an Kaufkraft verliert. Beispiel: Bei 3 % Inflation kostet ein Produkt in einem Jahr etwa 3 % mehr."},
+  {term:"Rendite", def:"Der prozentuale Ertrag einer Anlage über einen Zeitraum. Beispiel: Eine Rendite von 5 % pro Jahr bedeutet, aus 100 € werden nach einem Jahr rechnerisch 105 €."},
+  {term:"Portfolio", def:"Die Gesamtheit aller Anlagen, die eine Person hält. Beispiel: Ein Portfolio kann aus ETFs, Einzelaktien und Anleihen bestehen."},
+  {term:"Bullenmarkt / Bärenmarkt", def:"Bullenmarkt = längere Phase steigender Kurse, Bärenmarkt = längere Phase fallender Kurse. Beispiel: Nach einem Bärenmarkt folgte historisch bislang immer wieder ein Bullenmarkt."},
+  {term:"Blue Chip", def:"Eine Bezeichnung für Aktien besonders großer, etablierter Unternehmen. Beispiel: Blue-Chip-Aktien gelten meist als weniger schwankungsanfällig als kleine, junge Unternehmen."}
+];
+
+/* ============================================================
+   DATA: Nachschlagewerk — KI-Modelle (kuratiert, statisch)
    ============================================================ */
 const MODELLE = [
   {name:"GPT", dev:"OpenAI", kategorie:"Text", desc:"Vielseitiges Allround-Sprachmodell mit dem größten Verbraucher-Ökosystem rund um Chat, API und eigene Assistenten.",
@@ -557,9 +737,55 @@ const MODELLE = [
 ];
 
 /* ============================================================
+   DATA: Nachschlagewerk — Finanzen-Anlageklassen (kuratiert, statisch)
+   ============================================================ */
+const ANLAGEKLASSEN = [
+  {name:"Aktien", dev:"Einzelunternehmen", kategorie:"Wachstum", desc:"Direkter Besitzanteil an einem Unternehmen — Wert steigt/fällt mit dessen Geschäftsentwicklung und Marktstimmung.",
+    staerken:["Hohes langfristiges Renditepotenzial","Teilhabe am Unternehmenserfolg","Sehr liquide (schnell handelbar)"], schwaechen:["Kursschwankungen können erheblich sein","Einzeltitel-Risiko ohne Streuung"],
+    usecases:["Langfristiger Vermögensaufbau","Wer einzelne Unternehmen gezielt auswählen will"], preis:"Risiko: mittel bis hoch (bei Einzeltiteln höher)", vergleich:"Der klassische Baustein für langfristiges Wachstum."},
+  {name:"ETFs", dev:"Fondsanbieter", kategorie:"Wachstum", desc:"Börsengehandelte Fonds, die automatisch viele Aktien oder Anleihen bündeln — kaufbar wie eine einzelne Aktie.",
+    staerken:["Breite Streuung mit einem Kauf","Meist niedrige laufende Kosten","Einfach automatisierbar (Sparplan)"], schwaechen:["Kein Einfluss auf einzelne enthaltene Titel","Folgt dem Markt auch nach unten"],
+    usecases:["Einsteigerfreundlicher Vermögensaufbau","Automatisierte Sparpläne"], preis:"Risiko: mittel (abhängig vom zugrunde liegenden Markt)", vergleich:"Der pragmatischste Startpunkt für die meisten Anleger."},
+  {name:"Staatsanleihen", dev:"Staaten", kategorie:"Zins", desc:"Kredite an Staaten mit fester Laufzeit und Zinszahlung — gelten je nach Land als vergleichsweise sicher.",
+    staerken:["Planbare Zinszahlungen","Meist geringere Schwankung als Aktien"], schwaechen:["Geringere Renditechance","Wert kann bei Zinsänderungen schwanken"],
+    usecases:["Stabilisierender Portfolio-Baustein","Kürzerer Anlagehorizont"], preis:"Risiko: gering bis mittel (abhängig vom Land)", vergleich:"Der ruhige Gegenpart zu schwankungsfreudigeren Aktien."},
+  {name:"Unternehmensanleihen", dev:"Unternehmen", kategorie:"Zins", desc:"Kredite an Unternehmen mit fester Verzinsung — Risiko und Zins hängen stark von der Kreditwürdigkeit des Unternehmens ab.",
+    staerken:["Höhere Zinsen als viele Staatsanleihen","Planbare Zahlungen"], schwaechen:["Ausfallrisiko bei schwächeren Unternehmen","Weniger liquide als große Staatsanleihen"],
+    usecases:["Ergänzung zum Anleihen-Anteil eines Portfolios"], preis:"Risiko: mittel (abhängig von Bonität)", vergleich:"Mehr Zins als Staatsanleihen, aber auch mehr Ausfallrisiko."},
+  {name:"Kryptowährungen", dev:"Dezentrale Netzwerke", kategorie:"Spekulativ", desc:"Digitale, meist dezentral organisierte Vermögenswerte (z. B. Bitcoin) ohne klassischen Emittenten oder Cashflow.",
+    staerken:["Potenziell hohe Kurschancen","Rund um die Uhr handelbar","Unabhängig von einzelnen Staaten/Banken"], schwaechen:["Extrem hohe Schwankungen","Regulatorisch noch in Bewegung","Kein Ertrag durch Zins/Dividende"],
+    usecases:["Kleiner spekulativer Beimischungs-Anteil für risikobereite Anleger"], preis:"Risiko: sehr hoch", vergleich:"Die volatilste, spekulativste Anlageklasse dieser Liste."},
+  {name:"Gold & Rohstoffe", dev:"Physische Rohstoffe", kategorie:"Absicherung", desc:"Physische Güter wie Gold, Silber oder Öl — historisch oft als Absicherung gegen Inflation und Krisen genutzt.",
+    staerken:["Gilt als Krisen-/Inflationsschutz","Wenig abhängig von einzelnen Unternehmen"], schwaechen:["Kein laufender Ertrag (keine Zinsen/Dividenden)","Kurzfristig ebenfalls schwankungsanfällig"],
+    usecases:["Beimischung zur Diversifikation","Absicherung gegen Inflation"], preis:"Risiko: mittel", vergleich:"Kein Wachstumstreiber, aber ein klassischer Diversifikations-Baustein."},
+  {name:"Immobilienfonds (REITs)", dev:"Immobiliengesellschaften", kategorie:"Sachwert", desc:"Fonds, die in Immobilien investieren (Wohnen, Gewerbe) — handelbar wie eine Aktie, ohne selbst eine Immobilie kaufen zu müssen.",
+    staerken:["Zugang zu Immobilienmarkt ohne Eigenkapital für Direktkauf","Oft laufende Ausschüttungen"], schwaechen:["Abhängig vom Immobilien- und Zinsmarkt","Kursschwankungen wie bei Aktien möglich"],
+    usecases:["Diversifikation über Aktien/Anleihen hinaus"], preis:"Risiko: mittel", vergleich:"Immobilien-Zugang ohne die Hürden eines Direktkaufs."},
+  {name:"Tagesgeld/Festgeld", dev:"Banken", kategorie:"Sicherheit", desc:"Verzinstes Bankguthaben — Tagesgeld täglich verfügbar, Festgeld für eine feste Laufzeit gebunden.",
+    staerken:["Sehr geringes Risiko (oft einlagengesichert)","Tagesgeld jederzeit verfügbar"], schwaechen:["Meist niedrige Verzinsung","Kaufkraftverlust bei hoher Inflation möglich"],
+    usecases:["Notgroschen","Geld, das kurzfristig gebraucht wird"], preis:"Risiko: sehr gering", vergleich:"Der Sicherheits-Baustein, nicht der Rendite-Treiber."},
+  {name:"P2P-Kredite", dev:"Kreditplattformen", kategorie:"Spekulativ", desc:"Direkte Kreditvergabe an Privatpersonen oder Unternehmen über Online-Plattformen, außerhalb klassischer Banken.",
+    staerken:["Teils höhere Zinsen als klassische Anleihen"], schwaechen:["Ausfallrisiko einzelner Kreditnehmer","Weniger reguliert/etabliert als klassische Anlagen","Geringere Liquidität"],
+    usecases:["Kleiner Beimischungs-Anteil für erfahrenere Anleger"], preis:"Risiko: hoch", vergleich:"Höhere Zinsen bei spürbar höherem Ausfallrisiko."},
+  {name:"Optionen & Derivate", dev:"Finanzinstrumente", kategorie:"Spekulativ", desc:"Verträge, deren Wert sich von einem zugrunde liegenden Vermögenswert ableitet — können zur Absicherung oder zur Spekulation genutzt werden.",
+    staerken:["Können Portfolios gezielt absichern","Hebelwirkung ermöglicht große Gewinne"], schwaechen:["Hebelwirkung ermöglicht ebenso große Verluste","Komplex, für Einsteiger meist ungeeignet"],
+    usecases:["Absicherung bestehender Positionen (fortgeschritten)"], preis:"Risiko: sehr hoch, für Einsteiger nicht empfohlen", vergleich:"Ein Werkzeug für erfahrene Anleger, kein Einstiegsprodukt."}
+];
+
+const EINSTIEG_DATA = {
+  ki: { grundlagen:GRUNDLAGEN, schritte:ERSTE_SCHRITTE, glossar:GLOSSAR, hint:"Ganz neu beim Thema? Lies die 6 Karten der Reihe nach — danach verstehst du jede Meldung im Feed.", title:"KI in 5 Minuten" },
+  finanzen: { grundlagen:FINANZEN_GRUNDLAGEN, schritte:FINANZEN_ERSTE_SCHRITTE, glossar:FINANZEN_GLOSSAR, hint:"Ganz neu beim Thema Finanzen? Lies die 6 Karten der Reihe nach — danach verstehst du die Grundlagen hinter jeder Meldung.", title:"Finanzen in 5 Minuten" }
+};
+const REF_DATA = {
+  ki: { items:MODELLE, priceLabel:"Preisniveau", devLabel:"Entwickler" },
+  finanzen: { items:ANLAGEKLASSEN, priceLabel:"Risikoniveau", devLabel:"Typ" }
+};
+const TOPIC_LABEL = { ki:"KI", finanzen:"Finanzen" };
+
+/* ============================================================
    STATE
    ============================================================ */
-const state = { feed:[], filter:'Alle', modelFilter:'Alle', loading:false, error:null };
+const state = { feed:[], filter:'Alle', topic:'ki', loading:false, error:null };
 const UNSPLASH_POOL = [
   'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&q=80&auto=format&fit=crop',
@@ -625,14 +851,6 @@ function createMediaEl(post, compactMonogramSource){
 /* ============================================================
    FEED
    ============================================================ */
-function categoryToFilterGroup(cat){
-  if (cat === 'Modelle' || cat === 'Tools') return 'Modelle & Tools';
-  if (cat === 'Unternehmen' || cat === 'Wirtschaft') return 'Business';
-  if (cat === 'Forschung') return 'Forschung';
-  if (cat === 'Politik') return 'Politik';
-  return 'Alle';
-}
-
 async function loadFeed(){
   state.loading = true; state.error = null;
   renderFeed();
@@ -669,13 +887,13 @@ function renderFeed(){
     box.className = 'error-box';
     box.innerHTML = `<p>Feed konnte nicht geladen werden: ${escapeHtml(state.error)}</p><p style="font-size:12px;color:var(--text-faint);">Hinweis: news.json wird per GitHub Actions erzeugt — direkt nach dem Einrichten kann die erste Aktualisierung etwas dauern.</p>`;
     const retry = document.createElement('button');
-    retry.className = 'lime-btn'; retry.textContent = 'Erneut versuchen';
+    retry.className = 'accent-btn'; retry.textContent = 'Erneut versuchen';
     retry.onclick = loadFeed;
     box.appendChild(retry);
     list.appendChild(box);
     return;
   }
-  const filtered = state.filter === 'Alle' ? state.feed : state.feed.filter(p=>categoryToFilterGroup(p.category) === state.filter);
+  const filtered = state.filter === 'Alle' ? state.feed : state.feed.filter(p=>p.topic === state.filter);
   if (!filtered.length){
     const empty = document.createElement('div');
     empty.className = 'empty-box';
@@ -684,41 +902,37 @@ function renderFeed(){
     return;
   }
   filtered.forEach((post, i)=>{
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.style.animationDelay = (i*0.05)+'s';
-    const top = document.createElement('div');
-    top.className = 'post-top';
+    const row = document.createElement('div');
+    row.className = 'post-row';
+    row.style.animationDelay = (i*0.04)+'s';
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
     const companyLabel = (post.companies && post.companies[0]) || post.source || '?';
     avatar.style.background = avatarGradient(companyLabel);
     avatar.textContent = String(companyLabel).charAt(0).toUpperCase();
     const body = document.createElement('div');
-    body.style.flex = '1';
+    body.className = 'post-body';
     body.innerHTML = `
       <div class="post-meta-line">
         <span class="post-company">${escapeHtml(companyLabel)}</span>
-        <span class="badge">${escapeHtml(post.category||'')}</span>
-        <span class="post-source">${escapeHtml(post.source||'')}</span>
+        <span class="badge-topic">${escapeHtml(TOPIC_LABEL[post.topic]||post.topic||'')}</span>
+        <span class="badge-category">${escapeHtml(post.category||'')}</span>
+        <span class="post-source">· ${escapeHtml(post.source||'')}</span>
       </div>
       <div class="post-headline">${escapeHtml(post.headline||'')}</div>
     `;
-    top.appendChild(avatar); top.appendChild(body);
-    card.appendChild(top);
-    card.appendChild(createMediaEl(post));
     const why = document.createElement('p');
     why.className = 'post-why'; why.textContent = post.why || '';
-    card.appendChild(why);
+    body.appendChild(why);
+    body.appendChild(createMediaEl(post));
     if (post.models && post.models.length){
       const tags = document.createElement('div'); tags.className = 'hashtags';
       post.models.forEach(m=>{ const t = document.createElement('span'); t.className='hashtag'; t.textContent = '#'+String(m).replace(/\s+/g,''); tags.appendChild(t); });
-      card.appendChild(tags);
+      body.appendChild(tags);
     }
-    const hint = document.createElement('div'); hint.className = 'hover-hint'; hint.textContent = 'Details öffnen →';
-    card.appendChild(hint);
-    card.onclick = ()=> openNewsDetail(post);
-    list.appendChild(card);
+    row.appendChild(avatar); row.appendChild(body);
+    row.onclick = ()=> openNewsDetail(post);
+    list.appendChild(row);
   });
 }
 
@@ -742,6 +956,7 @@ function renderNewsDetail(post, detail){
   const h2 = document.createElement('h2'); h2.textContent = post.headline; content.appendChild(h2);
 
   const chips = document.createElement('div');
+  const topicChip = document.createElement('span'); topicChip.className='chip-mini'; topicChip.textContent = TOPIC_LABEL[post.topic]||post.topic||''; chips.appendChild(topicChip);
   (post.models||[]).forEach(m=>{ const c=document.createElement('span'); c.className='chip-mini'; c.textContent=m; chips.appendChild(c); });
   (post.companies||[]).forEach(m=>{ const c=document.createElement('span'); c.className='chip-mini'; c.textContent=m; chips.appendChild(c); });
   content.appendChild(chips);
@@ -764,14 +979,18 @@ function renderNewsDetail(post, detail){
 }
 
 /* ============================================================
-   EINSTIEG rendering
+   EINSTIEG rendering (themen-abhängig)
    ============================================================ */
 function renderEinstieg(){
+  const data = EINSTIEG_DATA[state.topic];
+  document.getElementById('einstieg-hint').textContent = data.hint;
+  document.getElementById('einstieg-grundlagen-title').textContent = data.title;
+
   const grund = document.getElementById('einstieg-grundlagen');
   grund.innerHTML = '';
-  GRUNDLAGEN.forEach((g, i)=>{
+  data.grundlagen.forEach((g, i)=>{
     const card = document.createElement('div');
-    card.className = 'simple-card'; card.style.marginBottom = '10px';
+    card.className = 'simple-card';
     card.innerHTML = `<div class="row"><span class="num-badge">${i+1}</span><div><h3>${escapeHtml(g.title)}</h3><p>${escapeHtml(g.teaser)}</p></div></div>`;
     card.onclick = ()=> openStaticSheet(g.title, g.paragraphs, g.merksatz);
     grund.appendChild(card);
@@ -779,7 +998,7 @@ function renderEinstieg(){
 
   const schritte = document.getElementById('einstieg-schritte');
   schritte.innerHTML = '';
-  ERSTE_SCHRITTE.forEach(g=>{
+  data.schritte.forEach(g=>{
     const card = document.createElement('div');
     card.className = 'simple-card';
     card.innerHTML = `<h3>${escapeHtml(g.title)}</h3><p>${escapeHtml(g.teaser)}</p>`;
@@ -789,7 +1008,7 @@ function renderEinstieg(){
 
   const gloss = document.getElementById('einstieg-glossar');
   gloss.innerHTML = '';
-  GLOSSAR.forEach(g=>{
+  data.glossar.forEach(g=>{
     const chip = document.createElement('div');
     chip.className = 'glossary-chip';
     chip.innerHTML = `<strong>${escapeHtml(g.term)}</strong>`;
@@ -810,42 +1029,47 @@ function openStaticSheet(title, paragraphs, merksatz){
 }
 
 /* ============================================================
-   MODELLE rendering
+   NACHSCHLAGEWERK rendering (themen-abhängig)
    ============================================================ */
 function renderModelle(){
+  const ref = REF_DATA[state.topic];
   const list = document.getElementById('model-list');
   list.innerHTML = '';
-  const filtered = state.modelFilter === 'Alle' ? MODELLE : MODELLE.filter(m=>m.kategorie === state.modelFilter);
-  filtered.forEach(m=>{
-    const card = document.createElement('div');
-    card.className = 'model-card';
-    const avatar = document.createElement('div'); avatar.className='avatar'; avatar.style.background = avatarGradient(m.name); avatar.textContent = m.name.charAt(0);
-    const body = document.createElement('div'); body.style.flex='1';
-    body.innerHTML = `<h3>${escapeHtml(m.name)}</h3><div class="dev">${escapeHtml(m.dev)} · ${escapeHtml(m.kategorie)}</div><p>${escapeHtml(m.desc)}</p><div class="usecase-chips">${m.usecases.map(u=>`<span class="usecase-chip">${escapeHtml(u)}</span>`).join('')}</div>`;
-    card.appendChild(avatar); card.appendChild(body);
-    card.onclick = ()=> openModelSheet(m);
-    list.appendChild(card);
+  ref.items.forEach(m=>{
+    const row = document.createElement('div');
+    row.className = 'ref-row';
+    row.innerHTML = `
+      <div class="ref-row-top">
+        <h3>${escapeHtml(m.name)}</h3>
+        <span class="dev">${escapeHtml(m.kategorie)} · ${escapeHtml(m.dev)}</span>
+        <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      <p>${escapeHtml(m.desc)}</p>
+      <p class="ref-best"><b>Am besten für:</b> ${m.usecases.map(escapeHtml).join(', ')}</p>
+    `;
+    row.onclick = ()=> openModelSheet(m, ref);
+    list.appendChild(row);
   });
 }
-function openModelSheet(m){
+function openModelSheet(m, ref){
   openSheet();
   const content = document.getElementById('sheet-content');
   content.innerHTML = `
     <h2>${escapeHtml(m.name)}</h2>
-    <p style="color:var(--lime);font-family:var(--mono);font-size:12px;margin-top:-8px;">${escapeHtml(m.dev)} · ${escapeHtml(m.kategorie)}</p>
+    <p style="color:var(--blue);font-family:var(--mono);font-size:12px;margin-top:-8px;">${escapeHtml(m.dev)} · ${escapeHtml(m.kategorie)}</p>
     <p>${escapeHtml(m.desc)}</p>
+    <h4 class="kicker">Am besten für</h4>
+    <div class="usecase-chips">${m.usecases.map(u=>`<span class="usecase-chip">${escapeHtml(u)}</span>`).join('')}</div>
     <h4 class="kicker">Stärken</h4><ul>${m.staerken.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>
     <h4 class="kicker">Schwächen</h4><ul>${m.schwaechen.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>
-    <h4 class="kicker">Typische Use Cases</h4>
-    <div class="usecase-chips">${m.usecases.map(u=>`<span class="usecase-chip">${escapeHtml(u)}</span>`).join('')}</div>
-    <h4 class="kicker">Preisniveau</h4><p>${escapeHtml(m.preis)}</p>
+    <h4 class="kicker">${escapeHtml(ref.priceLabel)}</h4><p>${escapeHtml(m.preis)}</p>
     <div class="merksatz">${escapeHtml(m.vergleich)}</div>
-    <p style="font-size:12px;color:var(--text-faint);margin-top:20px;">Kuratierte Basisdaten — Versionen und Preise ändern sich schnell.</p>
+    <p style="font-size:12px;color:var(--text-faint);margin-top:20px;">Kuratierte Basisdaten — Details können sich schnell ändern.</p>
   `;
 }
 
 /* ============================================================
-   ARCHIV + WOCHENRÜCKBLICK
+   ARCHIV + WOCHENRÜCKBLICK + TRENDS
    ============================================================ */
 let archiveCache = null;
 async function loadArchive(){
@@ -877,7 +1101,7 @@ async function renderArchive(){
     group.appendChild(header);
     items.forEach(post=>{
       const row = document.createElement('div'); row.className='compact-post';
-      row.innerHTML = `<div><div class="post-meta-line"><span class="badge">${escapeHtml(post.category||'')}</span><span class="post-source">${escapeHtml(post.source||'')}</span></div><div class="post-headline" style="font-size:14px;margin:2px 0 0;">${escapeHtml(post.headline||'')}</div></div>`;
+      row.innerHTML = `<div class="post-meta-line"><span class="badge-topic">${escapeHtml(TOPIC_LABEL[post.topic]||post.topic||'')}</span><span class="badge-category">${escapeHtml(post.category||'')}</span><span class="post-source">· ${escapeHtml(post.source||'')}</span></div><div class="post-headline">${escapeHtml(post.headline||'')}</div>`;
       row.onclick = ()=> openNewsDetail(post);
       group.appendChild(row);
     });
@@ -885,21 +1109,60 @@ async function renderArchive(){
   }
 }
 
+async function renderTrends(){
+  const el = document.getElementById('trends-list');
+  let archive;
+  try{ archive = await loadArchive(); }
+  catch(e){ el.innerHTML = `<div class="empty-box" style="padding:10px 0;">Noch keine Daten.</div>`; return; }
+  const cutoff = Date.now() - 7*24*60*60*1000;
+  const counts = new Map();
+  for (const key of Object.keys(archive)){
+    if (!key.startsWith('day-')) continue;
+    const parts = key.replace('day-','').split('-').map(Number);
+    const d = new Date(parts[0], parts[1]-1, parts[2]).getTime();
+    if (d < cutoff) continue;
+    for (const post of (archive[key]||[])){
+      const names = [...(post.companies||[]), ...(post.models||[])];
+      for (const n of names){
+        const key2 = n + '||' + (post.topic||'');
+        counts.set(key2, (counts.get(key2)||0) + 1);
+      }
+    }
+  }
+  const sorted = [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if (!sorted.length){ el.innerHTML = `<div class="empty-box" style="padding:10px 0;">Noch zu wenig Daten für Trends.</div>`; return; }
+  el.innerHTML = sorted.map(([key2, count])=>{
+    const [name, topic] = key2.split('||');
+    return `<div class="trend-item"><span class="trend-name">${escapeHtml(name)}<span class="trend-topic-tag">${escapeHtml(TOPIC_LABEL[topic]||'')}</span></span><span class="trend-count">${count} Erwähnungen</span></div>`;
+  }).join('');
+}
+
 async function weeklyReview(){
   openSheet();
   document.getElementById('sheet-content').innerHTML = `<div class="sheet-loading"><span class="spinner"></span>Wochenrückblick wird geladen …</div>`;
+  let data;
   try{
-    const review = await fetchJSON('./weekly-review.json');
-    document.getElementById('sheet-content').innerHTML = `
-      <h2>Wochenrückblick</h2>
+    data = await fetchJSON('./weekly-review.json');
+  }catch(e){
+    document.getElementById('sheet-content').innerHTML = `<h2>Wochenrückblick</h2><div class="empty-box">Noch keine Daten vorhanden — nach den ersten Feed-Aktualisierungen klappt's.</div>`;
+    return;
+  }
+  let html = '<h2>Wochenrückblick</h2>';
+  for (const topicId of ['ki','finanzen']){
+    const review = data[topicId];
+    html += `<h3 class="sub-heading">${escapeHtml(TOPIC_LABEL[topicId])}</h3>`;
+    if (!review){
+      html += `<div class="empty-box" style="padding:14px 0;">Noch zu wenig Material für einen sinnvollen Rückblick.</div>`;
+      continue;
+    }
+    html += `
       <h4 class="kicker">Die Woche</h4><p>${escapeHtml(review.summary||'')}</p>
       <h4 class="kicker">Highlights</h4><ul>${(review.highlights||[]).map(h=>`<li>${escapeHtml(h)}</li>`).join('')}</ul>
       <h4 class="kicker">Trend</h4><p>${escapeHtml(review.trend||'')}</p>
       <h4 class="kicker">Worauf achten</h4><p>${escapeHtml(review.watch||'')}</p>
     `;
-  }catch(e){
-    document.getElementById('sheet-content').innerHTML = `<h2>Wochenrückblick</h2><div class="empty-box">Noch zu wenig Material für einen sinnvollen Rückblick, oder die Datei wurde noch nicht erzeugt — nach den ersten Feed-Aktualisierungen klappt's.</div>`;
   }
+  document.getElementById('sheet-content').innerHTML = html;
 }
 
 /* ============================================================
@@ -918,16 +1181,18 @@ document.getElementById('sheet-backdrop').onclick = closeSheet;
 document.addEventListener('keydown', e=>{ if (e.key === 'Escape') closeSheet(); });
 
 /* ============================================================
-   TABS
+   NAV (sidebar + bottom bar, kept in sync)
    ============================================================ */
-document.querySelectorAll('nav.tabs button').forEach(btn=>{
-  btn.onclick = ()=>{
-    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-    if (btn.dataset.tab === 'archiv') renderArchive();
-  };
+const colTitles = { feed:'Feed', einstieg:'Einstieg', archiv:'Archiv', nachschlagewerk:'Wegweiser' };
+function showTab(tab){
+  document.querySelectorAll('.nav-btn[data-tab]').forEach(b=>b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('col-title').textContent = colTitles[tab] || '';
+  if (tab === 'archiv') renderArchive();
+}
+document.querySelectorAll('.nav-btn[data-tab]').forEach(btn=>{
+  btn.onclick = ()=> showTab(btn.dataset.tab);
 });
 
 document.querySelectorAll('#feed-filters .chip').forEach(chip=>{
@@ -938,14 +1203,18 @@ document.querySelectorAll('#feed-filters .chip').forEach(chip=>{
     renderFeed();
   };
 });
-document.querySelectorAll('#model-filters .chip').forEach(chip=>{
-  chip.onclick = ()=>{
-    document.querySelectorAll('#model-filters .chip').forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');
-    state.modelFilter = chip.dataset.filter;
-    renderModelle();
-  };
+
+/* Themen-Switcher (Sidebar + mobile inline), gehalten in Sync */
+function setTopic(topic){
+  state.topic = topic;
+  document.querySelectorAll('.topic-pill[data-topic]').forEach(p=>p.classList.toggle('active', p.dataset.topic === topic));
+  renderEinstieg();
+  renderModelle();
+}
+document.querySelectorAll('.topic-pill[data-topic]').forEach(pill=>{
+  pill.onclick = ()=> setTopic(pill.dataset.topic);
 });
+
 document.getElementById('feed-refresh').onclick = loadFeed;
 document.getElementById('weekly-review-btn').onclick = weeklyReview;
 
@@ -955,65 +1224,9 @@ document.getElementById('weekly-review-btn').onclick = weeklyReview;
 document.getElementById('header-date').textContent = new Intl.DateTimeFormat('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'}).format(new Date());
 
 /* ============================================================
-   INTRO (swipe / drag / wheel / keys)
+   INTRO (einfacher Welcome-Screen, kein Swipe)
    ============================================================ */
 (function initIntro(){
-  const track = document.getElementById('slides-track');
-  const dashes = document.querySelectorAll('#intro-progress .dash');
-  let slide = 0;
-  const total = 3;
-  let dragging = false, startX = 0, startTranslate = 0, currentTranslate = 0;
-
-  function update(animated){
-    currentTranslate = -slide * (100/total);
-    track.style.transform = `translateX(${currentTranslate}%)`;
-    dashes.forEach((d,i)=> d.classList.toggle('active', i===slide));
-  }
-  function goTo(n){ slide = Math.max(0, Math.min(total-1, n)); update(); }
-  function next(){ if (slide < total-1) goTo(slide+1); else finishIntro(); }
-  function prev(){ goTo(slide-1); }
-
-  track.addEventListener('pointerdown', e=>{
-    dragging = true; startX = e.clientX; startTranslate = currentTranslate;
-    track.classList.add('dragging'); track.setPointerCapture(e.pointerId);
-  });
-  track.addEventListener('pointermove', e=>{
-    if (!dragging) return;
-    const dx = e.clientX - startX;
-    const pct = (dx / window.innerWidth) * (100/total);
-    track.style.transform = `translateX(${startTranslate + pct}%)`;
-  });
-  function endDrag(e){
-    if (!dragging) return;
-    dragging = false; track.classList.remove('dragging');
-    const dx = e.clientX - startX;
-    if (dx < -60) next();
-    else if (dx > 60) prev();
-    else update();
-  }
-  track.addEventListener('pointerup', endDrag);
-  track.addEventListener('pointercancel', endDrag);
-
-  let wheelLock = false;
-  document.getElementById('intro').addEventListener('wheel', e=>{
-    if (wheelLock) return;
-    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    if (Math.abs(delta) < 20) return;
-    wheelLock = true; setTimeout(()=> wheelLock = false, 500);
-    if (delta > 0) next(); else prev();
-  }, {passive:true});
-
-  document.addEventListener('keydown', e=>{
-    if (document.getElementById('intro').classList.contains('exiting')) return;
-    if (e.key === 'ArrowRight') next();
-    else if (e.key === 'ArrowLeft') prev();
-    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); next(); }
-    else if (e.key === 'Escape') finishIntro();
-  });
-
-  document.getElementById('intro-skip').onclick = finishIntro;
-  document.getElementById('intro-start').onclick = finishIntro;
-
   function finishIntro(){
     const intro = document.getElementById('intro');
     if (intro.classList.contains('exiting')) return;
@@ -1021,82 +1234,17 @@ document.getElementById('header-date').textContent = new Intl.DateTimeFormat('de
     setTimeout(()=>{
       intro.style.display = 'none';
       document.getElementById('app').hidden = false;
-      dimBackground();
     }, 620);
   }
 
-  update();
+  document.getElementById('intro-skip').onclick = finishIntro;
+  document.getElementById('intro-start').onclick = finishIntro;
+  document.addEventListener('keydown', e=>{
+    if (e.key === 'Escape' || e.key === 'Enter') finishIntro();
+  });
+
   loadFeed();
-})();
-
-/* ============================================================
-   THREE.JS BACKGROUND
-   ============================================================ */
-let bgState = { introOpacity:{particles:0.55, mesh:0.16}, appOpacity:{particles:0.22, mesh:0.05} };
-function dimBackground(){
-  if (window.__bg && window.__bg.setTarget) window.__bg.setTarget(bgState.appOpacity);
-}
-(function initBackground(){
-  if (window.__THREE_FAILED__ || typeof THREE === 'undefined'){ return; }
-  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const container = document.getElementById('bg-canvas');
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-  camera.position.z = 34;
-  const renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  container.appendChild(renderer.domElement);
-
-  const limeColor = new THREE.Color(0xd2ff00);
-
-  const particleCount = 900;
-  const positions = new Float32Array(particleCount*3);
-  for (let i=0;i<particleCount;i++){
-    positions[i*3] = (Math.random()-0.5)*90;
-    positions[i*3+1] = (Math.random()-0.5)*90;
-    positions[i*3+2] = (Math.random()-0.5)*60;
-  }
-  const pGeo = new THREE.BufferGeometry();
-  pGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-  const pMat = new THREE.PointsMaterial({ color: limeColor, size:0.5, transparent:true, opacity: bgState.introOpacity.particles });
-  const particles = new THREE.Points(pGeo, pMat);
-  scene.add(particles);
-
-  const icoGeo = new THREE.IcosahedronGeometry(14, 1);
-  const icoMat = new THREE.MeshBasicMaterial({ color: limeColor, wireframe:true, transparent:true, opacity: bgState.introOpacity.mesh });
-  const ico = new THREE.Mesh(icoGeo, icoMat);
-  scene.add(ico);
-
-  let target = { particles: pMat.opacity, mesh: icoMat.opacity };
-  window.__bg = { setTarget(o){ target = o; } };
-
-  let mouseX = 0, mouseY = 0;
-  window.addEventListener('mousemove', e=>{
-    mouseX = (e.clientX / window.innerWidth - 0.5);
-    mouseY = (e.clientY / window.innerHeight - 0.5);
-  });
-  window.addEventListener('resize', ()=>{
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-
-  function animate(){
-    requestAnimationFrame(animate);
-    pMat.opacity += (target.particles - pMat.opacity) * 0.05;
-    icoMat.opacity += (target.mesh - icoMat.opacity) * 0.05;
-    if (!reduced){
-      ico.rotation.y += 0.0015;
-      ico.rotation.x += 0.0007;
-      particles.rotation.y += 0.0003;
-      camera.position.x += (mouseX*8 - camera.position.x) * 0.03;
-      camera.position.y += (-mouseY*8 - camera.position.y) * 0.03;
-      camera.lookAt(scene.position);
-    }
-    renderer.render(scene, camera);
-  }
-  animate();
+  renderTrends();
 })();
 
 /* ============================================================

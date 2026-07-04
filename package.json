@@ -1,9 +1,9 @@
 {
-  "name": "signal-ai-intelligence",
+  "name": "newsync",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Signal – privates KI-News-Dashboard. Statische Seite, News werden per GitHub Actions Cron aktualisiert.",
+  "description": "NewSync – privates News-Dashboard für KI und Finanzen. Statische Seite, News werden per GitHub Actions Cron aktualisiert.",
   "scripts": {
     "generate-news": "node scripts/generate-news.js"
   }
