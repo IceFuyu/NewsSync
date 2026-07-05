@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weltquiz — Flaggen &amp; Länder</title>
+<meta name="description" content="Flaggenquiz und Länderquiz: Länder, Flaggen und Hauptstädte der Welt erraten.">
+<style>
+  :root{
+    --bg: #0b0e14;
+    --bg-elevated: #12151f;
+    --card: #161a26;
+    --card-hover: #1c2130;
+    --border: #262b3a;
+    --text: #eef0f5;
+    --text-dim: #9099ad;
+    --accent: #6d5bff;
+    --accent-2: #00c2a8;
+    --accent-grad: linear-gradient(135deg, #6d5bff 0%, #9b5bff 50%, #00c2a8 100%);
+    --danger: #ff5b6e;
+    --success: #2dd4a7;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(circle at 20% -10%, #1a1f33 0%, var(--bg) 55%) fixed;
+    color: var(--text);
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+  }
+  .app{
+    width:100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+  }
+  header.top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 4px 2px 22px;
+  }
+  header.top .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    font-size:1.15rem;
+    letter-spacing:-0.02em;
+  }
+  header.top .brand .logo{
+    width:34px; height:34px;
+    border-radius:10px;
+    background: var(--accent-grad);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem;
+  }
+  .icon-btn{
+    background: var(--card);
+    border:1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 10px;
+    padding:8px 12px;
+    font-size:0.85rem;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .icon-btn:hover{ background: var(--card-hover); color: var(--text); }
+
+  /* ---------- Screens ---------- */
+  .screen{ display:none; flex-direction:column; gap:18px; animation: fade .25s ease; }
+  .screen.active{ display:flex; }
+  @keyframes fade{ from{ opacity:0; transform: translateY(6px);} to{opacity:1; transform:none;} }
+
+  h1.title{ font-size:1.7rem; margin:0 0 4px; letter-spacing:-0.02em; }
+  p.subtitle{ margin:0; color:var(--text-dim); line-height:1.5; font-size:0.95rem; }
+
+  /* Mode cards on home screen */
+  .mode-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:6px; }
+  @media (max-width:520px){ .mode-grid{ grid-template-columns:1fr; } }
+  .mode-card{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius: var(--radius);
+    padding:22px 18px;
+    cursor:pointer;
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    text-align:left;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .mode-card:hover{ transform: translateY(-3px); border-color:#3a3f55; background: var(--card-hover); }
+  .mode-card .emoji{ font-size:2.2rem; }
+  .mode-card h3{ margin:0; font-size:1.05rem; }
+  .mode-card p{ margin:0; color:var(--text-dim); font-size:0.85rem; line-height:1.4; }
+
+  .stats-strip{
+    display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;
+  }
+  .stat-pill{
+    background: var(--bg-elevated);
+    border:1px solid var(--border);
+    border-radius: 999px;
+    padding:6px 14px;
+    font-size:0.78rem;
+    color: var(--text-dim);
+  }
+  .stat-pill b{ color:var(--text); }
+
+  /* Setup screen */
+  .card{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius: var(--radius);
+    padding:20px;
+  }
+  .field-group{ margin-bottom:18px; }
+  .field-group:last-child{ margin-bottom:0; }
+  .field-label{
+    display:block;
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color: var(--text-dim);
+    margin-bottom:9px;
+    font-weight:600;
+  }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    background: var(--bg-elevated);
+    border:1px solid var(--border);
+    color: var(--text-dim);
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:0.85rem;
+    cursor:pointer;
+    transition: all .15s ease;
+    user-select:none;
+  }
+  .chip:hover{ border-color:#3a3f55; color:var(--text); }
+  .chip.selected{
+    background: var(--accent-grad);
+    color:#fff;
+    border-color:transparent;
+    font-weight:600;
+  }
+  .pool-hint{ margin-top:10px; font-size:0.78rem; color:var(--text-dim); }
+  .pool-hint b{ color: var(--accent-2); }
+
+  .primary-btn{
+    background: var(--accent-grad);
+    color:#fff;
+    border:none;
+    border-radius: var(--radius-sm);
+    padding:14px 20px;
+    font-size:1rem;
+    font-weight:700;
+    cursor:pointer;
+    width:100%;
+    transition: filter .15s ease, transform .1s ease;
+  }
+  .primary-btn:hover{ filter:brightness(1.08); }
+  .primary-btn:active{ transform: scale(0.99); }
+  .primary-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .ghost-btn{
+    background:transparent;
+    color: var(--text-dim);
+    border:1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding:12px 18px;
+    font-size:0.9rem;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .ghost-btn:hover{ color:var(--text); border-color:#3a3f55; }
+
+  .back-row{ display:flex; align-items:center; gap:10px; margin-bottom:2px; }
+  .back-link{
+    color: var(--text-dim);
+    background:none; border:none; cursor:pointer;
+    font-size:0.85rem; padding:6px 0;
+    display:flex; align-items:center; gap:6px;
+  }
+  .back-link:hover{ color:var(--text); }
+
+  /* Quiz screen */
+  .quiz-topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .progress-track{
+    flex:1; height:8px; border-radius:999px; background: var(--bg-elevated); overflow:hidden; border:1px solid var(--border);
+  }
+  .progress-fill{
+    height:100%; background: var(--accent-grad); border-radius:999px; transition: width .3s ease;
+  }
+  .score-badge{
+    font-size:0.85rem; color:var(--text-dim); white-space:nowrap; font-variant-numeric: tabular-nums;
+  }
+  .timer-track{
+    height:5px; border-radius:999px; background: var(--bg-elevated); overflow:hidden; margin-top:8px;
+  }
+  .timer-fill{
+    height:100%; background: var(--accent-2); border-radius:999px; transition: width 1s linear;
+  }
+  .timer-fill.low{ background: var(--danger); }
+
+  .question-card{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius: var(--radius);
+    padding:36px 20px;
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+    min-height:170px;
+    justify-content:center;
+    text-align:center;
+  }
+  .flag-display{ font-size:5rem; line-height:1; }
+  .question-text{ font-size:0.85rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; }
+  .question-main{ font-size:1.6rem; font-weight:700; letter-spacing:-0.01em; }
+
+  .choices-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:480px){ .choices-grid{ grid-template-columns:1fr; } }
+  .choice-btn{
+    background: var(--card);
+    border:1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    padding:16px 14px;
+    font-size:0.95rem;
+    text-align:left;
+    cursor:pointer;
+    transition: all .12s ease;
+    display:flex; align-items:center; gap:10px;
+  }
+  .choice-btn:hover:not(:disabled){ border-color: var(--accent); background: var(--card-hover); }
+  .choice-btn .key{
+    font-size:0.7rem; color:var(--text-dim); border:1px solid var(--border); border-radius:5px; padding:1px 6px;
+  }
+  .choice-btn.correct{ border-color: var(--success); background: rgba(45,212,167,0.12); }
+  .choice-btn.wrong{ border-color: var(--danger); background: rgba(255,91,110,0.12); }
+  .choice-btn:disabled{ cursor:default; opacity:0.85; }
+
+  .feedback-row{ min-height:26px; text-align:center; font-size:0.9rem; font-weight:600; }
+  .feedback-row.correct{ color: var(--success); }
+  .feedback-row.wrong{ color: var(--danger); }
+
+  /* Result screen */
+  .result-hero{ text-align:center; padding:18px 0 4px; }
+  .result-score{ font-size:3rem; font-weight:800; letter-spacing:-0.03em; }
+  .result-sub{ color:var(--text-dim); font-size:0.95rem; margin-top:4px; }
+  .record-banner{
+    background: rgba(109,91,255,0.12);
+    border:1px solid rgba(109,91,255,0.4);
+    color:#c9c2ff;
+    border-radius: var(--radius-sm);
+    padding:12px 16px;
+    font-size:0.9rem;
+    text-align:center;
+  }
+  .review-list{ display:flex; flex-direction:column; gap:8px; max-height:320px; overflow-y:auto; padding-right:4px; }
+  .review-item{
+    display:flex; align-items:center; gap:10px;
+    background: var(--bg-elevated);
+    border:1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding:10px 12px;
+    font-size:0.85rem;
+  }
+  .review-item .mark{ font-size:1rem; }
+  .review-item.ok .mark{ color: var(--success); }
+  .review-item.bad .mark{ color: var(--danger); }
+  .review-item .flag{ font-size:1.3rem; }
+  .review-item .txt{ flex:1; }
+  .review-item .txt b{ display:block; }
+  .review-item .txt span{ color:var(--text-dim); font-size:0.78rem; }
+
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn-row > *{ flex:1; }
+
+  footer.foot{
+    text-align:center; color:var(--text-dim); font-size:0.75rem; padding-top:30px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="brand"><span class="logo">🌐</span> Weltquiz</div>
+    <button class="icon-btn" id="homeBtn" type="button">Start</button>
+  </header>
+
+  <!-- HOME -->
+  <section class="screen active" id="screen-home">
+    <h1 class="title">Teste dein Weltwissen</h1>
+    <p class="subtitle">Zwei Quizmodi rund um Länder, Flaggen und Hauptstädte — mit Kontinent-Filter, Schwierigkeitsgraden und Timer.</p>
+
+    <div class="mode-grid">
+      <button class="mode-card" data-mode="flag" type="button">
+        <div class="emoji">🏳️</div>
+        <h3>Flaggenquiz</h3>
+        <p>Errate das Land anhand seiner Flagge.</p>
+      </button>
+      <button class="mode-card" data-mode="capital" type="button">
+        <div class="emoji">🌍</div>
+        <h3>Länderquiz</h3>
+        <p>Errate die Hauptstadt eines Landes.</p>
+      </button>
+    </div>
+
+    <div class="stats-strip" id="highscoreStrip"></div>
+  </section>
+
+  <!-- SETUP -->
+  <section class="screen" id="screen-setup">
+    <div class="back-row">
+      <button class="back-link" id="setupBack" type="button">← Zurück</button>
+    </div>
+    <h1 class="title" id="setupTitle">Quiz einrichten</h1>
+
+    <div class="card">
+      <div class="field-group">
+        <span class="field-label">Kontinent</span>
+        <div class="chip-row" id="continentChips"></div>
+      </div>
+      <div class="field-group">
+        <span class="field-label">Schwierigkeit</span>
+        <div class="chip-row" id="difficultyChips"></div>
+      </div>
+      <div class="field-group">
+        <span class="field-label">Anzahl Fragen</span>
+        <div class="chip-row" id="countChips"></div>
+      </div>
+      <div class="field-group">
+        <span class="field-label">Timer pro Frage</span>
+        <div class="chip-row" id="timerChips"></div>
+      </div>
+      <div class="field-group" style="margin-bottom:0;">
+        <p class="pool-hint" id="poolHint"></p>
+      </div>
+    </div>
+
+    <button class="primary-btn" id="startQuizBtn" type="button">Quiz starten</button>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="screen-quiz">
+    <div class="quiz-topbar">
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="score-badge" id="scoreBadge">0/0</div>
+    </div>
+    <div class="timer-track" id="timerTrack" style="display:none;"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+
+    <div class="question-card">
+      <div class="question-text" id="questionLabel">Welches Land gehört zu dieser Flagge?</div>
+      <div class="flag-display" id="flagDisplay"></div>
+      <div class="question-main" id="questionMain" style="display:none;"></div>
+    </div>
+
+    <div class="feedback-row" id="feedbackRow"></div>
+
+    <div class="choices-grid" id="choicesGrid"></div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="screen-result">
+    <div class="result-hero">
+      <div class="result-score" id="resultScore">0/0</div>
+      <div class="result-sub" id="resultSub"></div>
+    </div>
+    <div class="record-banner" id="recordBanner" style="display:none;"></div>
+    <div class="review-list" id="reviewList"></div>
+    <div class="btn-row">
+      <button class="ghost-btn" id="againSettingsBtn" type="button">Andere Einstellungen</button>
+      <button class="primary-btn" id="retryBtn" type="button">Nochmal spielen</button>
+    </div>
+  </section>
+
+  <footer class="foot">Weltquiz · Ländernamen &amp; Hauptstädte nach gängigen Referenzquellen · Daten lokal, keine externen Aufrufe</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------------------------------------------------------------
+   * Country data: [ISO 3166-1 alpha-2 code, German name, capital, continent, tier]
+   * tier: 1 = sehr bekannt, 2 = mittel bekannt, 3 = weniger bekannt
+   * ------------------------------------------------------------------- */
+  var COUNTRIES = [
+    // Europa
+    ["AL","Albanien","Tirana","Europa",3],
+    ["AD","Andorra","Andorra la Vella","Europa",3],
+    ["AT","Österreich","Wien","Europa",1],
+    ["BY","Belarus","Minsk","Europa",3],
+    ["BE","Belgien","Brüssel","Europa",1],
+    ["BA","Bosnien und Herzegowina","Sarajevo","Europa",3],
+    ["BG","Bulgarien","Sofia","Europa",2],
+    ["HR","Kroatien","Zagreb","Europa",2],
+    ["CY","Zypern","Nikosia","Europa",3],
+    ["CZ","Tschechien","Prag","Europa",2],
+    ["DK","Dänemark","Kopenhagen","Europa",1],
+    ["EE","Estland","Tallinn","Europa",3],
+    ["FI","Finnland","Helsinki","Europa",1],
+    ["FR","Frankreich","Paris","Europa",1],
+    ["DE","Deutschland","Berlin","Europa",1],
+    ["GR","Griechenland","Athen","Europa",1],
+    ["HU","Ungarn","Budapest","Europa",2],
+    ["IS","Island","Reykjavik","Europa",2],
+    ["IE","Irland","Dublin","Europa",1],
+    ["IT","Italien","Rom","Europa",1],
+    ["LV","Lettland","Riga","Europa",3],
+    ["LI","Liechtenstein","Vaduz","Europa",3],
+    ["LT","Litauen","Vilnius","Europa",3],
+    ["LU","Luxemburg","Luxemburg","Europa",2],
+    ["MT","Malta","Valletta","Europa",3],
+    ["MD","Moldau","Chisinau","Europa",3],
+    ["MC","Monaco","Monaco","Europa",3],
+    ["ME","Montenegro","Podgorica","Europa",3],
+    ["NL","Niederlande","Amsterdam","Europa",1],
+    ["MK","Nordmazedonien","Skopje","Europa",3],
+    ["NO","Norwegen","Oslo","Europa",1],
+    ["PL","Polen","Warschau","Europa",1],
+    ["PT","Portugal","Lissabon","Europa",1],
+    ["RO","Rumänien","Bukarest","Europa",2],
+    ["RU","Russland","Moskau","Europa",1],
+    ["SM","San Marino","San Marino","Europa",3],
+    ["RS","Serbien","Belgrad","Europa",2],
+    ["SK","Slowakei","Bratislava","Europa",2],
+    ["SI","Slowenien","Ljubljana","Europa",2],
+    ["ES","Spanien","Madrid","Europa",1],
+    ["SE","Schweden","Stockholm","Europa",1],
+    ["CH","Schweiz","Bern","Europa",1],
+    ["UA","Ukraine","Kiew","Europa",2],
+    ["GB","Vereinigtes Königreich","London","Europa",1],
+    ["VA","Vatikanstadt","Vatikanstadt","Europa",3],
+    // Afrika
+    ["DZ","Algerien","Algier","Afrika",2],
+    ["AO","Angola","Luanda","Afrika",3],
+    ["BJ","Benin","Porto-Novo","Afrika",3],
+    ["BW","Botswana","Gaborone","Afrika",3],
+    ["BF","Burkina Faso","Ouagadougou","Afrika",3],
+    ["BI","Burundi","Gitega","Afrika",3],
+    ["CV","Kap Verde","Praia","Afrika",3],
+    ["CM","Kamerun","Yaoundé","Afrika",3],
+    ["CF","Zentralafrikanische Republik","Bangui","Afrika",3],
+    ["TD","Tschad","N'Djamena","Afrika",3],
+    ["KM","Komoren","Moroni","Afrika",3],
+    ["CD","Kongo (Demokratische Republik)","Kinshasa","Afrika",2],
+    ["CG","Kongo (Republik)","Brazzaville","Afrika",3],
+    ["CI","Elfenbeinküste","Yamoussoukro","Afrika",3],
+    ["DJ","Dschibuti","Dschibuti","Afrika",3],
+    ["EG","Ägypten","Kairo","Afrika",1],
+    ["GQ","Äquatorialguinea","Malabo","Afrika",3],
+    ["ER","Eritrea","Asmara","Afrika",3],
+    ["SZ","Eswatini","Mbabane","Afrika",3],
+    ["ET","Äthiopien","Addis Abeba","Afrika",2],
+    ["GA","Gabun","Libreville","Afrika",3],
+    ["GM","Gambia","Banjul","Afrika",3],
+    ["GH","Ghana","Accra","Afrika",2],
+    ["GN","Guinea","Conakry","Afrika",3],
+    ["GW","Guinea-Bissau","Bissau","Afrika",3],
+    ["KE","Kenia","Nairobi","Afrika",2],
+    ["LS","Lesotho","Maseru","Afrika",3],
+    ["LR","Liberia","Monrovia","Afrika",3],
+    ["LY","Libyen","Tripolis","Afrika",2],
+    ["MG","Madagaskar","Antananarivo","Afrika",3],
+    ["MW","Malawi","Lilongwe","Afrika",3],
+    ["ML","Mali","Bamako","Afrika",3],
+    ["MR","Mauretanien","Nouakchott","Afrika",3],
+    ["MU","Mauritius","Port Louis","Afrika",3],
+    ["MA","Marokko","Rabat","Afrika",2],
+    ["MZ","Mosambik","Maputo","Afrika",3],
+    ["NA","Namibia","Windhoek","Afrika",2],
+    ["NE","Niger","Niamey","Afrika",3],
+    ["NG","Nigeria","Abuja","Afrika",2],
+    ["RW","Ruanda","Kigali","Afrika",3],
+    ["ST","São Tomé und Príncipe","São Tomé","Afrika",3],
+    ["SN","Senegal","Dakar","Afrika",3],
+    ["SC","Seychellen","Victoria","Afrika",3],
+    ["SL","Sierra Leone","Freetown","Afrika",3],
+    ["SO","Somalia","Mogadischu","Afrika",3],
+    ["ZA","Südafrika","Pretoria","Afrika",1],
+    ["SS","Südsudan","Juba","Afrika",3],
+    ["SD","Sudan","Khartum","Afrika",3],
+    ["TZ","Tansania","Dodoma","Afrika",3],
+    ["TG","Togo","Lomé","Afrika",3],
+    ["TN","Tunesien","Tunis","Afrika",2],
+    ["UG","Uganda","Kampala","Afrika",3],
+    ["ZM","Sambia","Lusaka","Afrika",3],
+    ["ZW","Simbabwe","Harare","Afrika",3],
+    // Asien
+    ["AF","Afghanistan","Kabul","Asien",2],
+    ["AM","Armenien","Jerewan","Asien",3],
+    ["AZ","Aserbaidschan","Baku","Asien",3],
+    ["BH","Bahrain","Manama","Asien",3],
+    ["BD","Bangladesch","Dhaka","Asien",2],
+    ["BT","Bhutan","Thimphu","Asien",3],
+    ["BN","Brunei","Bandar Seri Begawan","Asien",3],
+    ["KH","Kambodscha","Phnom Penh","Asien",2],
+    ["CN","China","Peking","Asien",1],
+    ["GE","Georgien","Tiflis","Asien",3],
+    ["IN","Indien","Neu-Delhi","Asien",1],
+    ["ID","Indonesien","Jakarta","Asien",2],
+    ["IR","Iran","Teheran","Asien",2],
+    ["IQ","Irak","Bagdad","Asien",2],
+    ["IL","Israel","Jerusalem","Asien",2],
+    ["JP","Japan","Tokio","Asien",1],
+    ["JO","Jordanien","Amman","Asien",3],
+    ["KZ","Kasachstan","Astana","Asien",2],
+    ["KW","Kuwait","Kuwait-Stadt","Asien",3],
+    ["KG","Kirgisistan","Bischkek","Asien",3],
+    ["LA","Laos","Vientiane","Asien",3],
+    ["LB","Libanon","Beirut","Asien",3],
+    ["MY","Malaysia","Kuala Lumpur","Asien",2],
+    ["MV","Malediven","Malé","Asien",3],
+    ["MN","Mongolei","Ulaanbaatar","Asien",3],
+    ["MM","Myanmar","Naypyidaw","Asien",3],
+    ["NP","Nepal","Kathmandu","Asien",2],
+    ["KP","Nordkorea","Pjöngjang","Asien",2],
+    ["OM","Oman","Maskat","Asien",3],
+    ["PK","Pakistan","Islamabad","Asien",2],
+    ["PS","Palästina","Ramallah","Asien",3],
+    ["PH","Philippinen","Manila","Asien",2],
+    ["QA","Katar","Doha","Asien",2],
+    ["SA","Saudi-Arabien","Riad","Asien",2],
+    ["SG","Singapur","Singapur","Asien",2],
+    ["KR","Südkorea","Seoul","Asien",1],
+    ["LK","Sri Lanka","Colombo","Asien",2],
+    ["SY","Syrien","Damaskus","Asien",2],
+    ["TW","Taiwan","Taipeh","Asien",2],
+    ["TJ","Tadschikistan","Duschanbe","Asien",3],
+    ["TH","Thailand","Bangkok","Asien",1],
+    ["TL","Osttimor","Dili","Asien",3],
+    ["TR","Türkei","Ankara","Asien",1],
+    ["TM","Turkmenistan","Aşgabat","Asien",3],
+    ["AE","Vereinigte Arabische Emirate","Abu Dhabi","Asien",2],
+    ["UZ","Usbekistan","Taschkent","Asien",3],
+    ["VN","Vietnam","Hanoi","Asien",2],
+    ["YE","Jemen","Sanaa","Asien",3],
+    // Nordamerika
+    ["AG","Antigua und Barbuda","Saint John's","Nordamerika",3],
+    ["BS","Bahamas","Nassau","Nordamerika",3],
+    ["BB","Barbados","Bridgetown","Nordamerika",3],
+    ["BZ","Belize","Belmopan","Nordamerika",3],
+    ["CA","Kanada","Ottawa","Nordamerika",1],
+    ["CR","Costa Rica","San José","Nordamerika",2],
+    ["CU","Kuba","Havanna","Nordamerika",2],
+    ["DM","Dominica","Roseau","Nordamerika",3],
+    ["DO","Dominikanische Republik","Santo Domingo","Nordamerika",2],
+    ["SV","El Salvador","San Salvador","Nordamerika",3],
+    ["GD","Grenada","St. George's","Nordamerika",3],
+    ["GT","Guatemala","Guatemala-Stadt","Nordamerika",2],
+    ["HT","Haiti","Port-au-Prince","Nordamerika",2],
+    ["HN","Honduras","Tegucigalpa","Nordamerika",3],
+    ["JM","Jamaika","Kingston","Nordamerika",2],
+    ["MX","Mexiko","Mexiko-Stadt","Nordamerika",1],
+    ["NI","Nicaragua","Managua","Nordamerika",3],
+    ["PA","Panama","Panama-Stadt","Nordamerika",2],
+    ["KN","St. Kitts und Nevis","Basseterre","Nordamerika",3],
+    ["LC","St. Lucia","Castries","Nordamerika",3],
+    ["VC","St. Vincent und die Grenadinen","Kingstown","Nordamerika",3],
+    ["TT","Trinidad und Tobago","Port of Spain","Nordamerika",2],
+    ["US","Vereinigte Staaten","Washington, D.C.","Nordamerika",1],
+    // Südamerika
+    ["AR","Argentinien","Buenos Aires","Südamerika",1],
+    ["BO","Bolivien","Sucre","Südamerika",2],
+    ["BR","Brasilien","Brasília","Südamerika",1],
+    ["CL","Chile","Santiago","Südamerika",1],
+    ["CO","Kolumbien","Bogotá","Südamerika",2],
+    ["EC","Ecuador","Quito","Südamerika",2],
+    ["GY","Guyana","Georgetown","Südamerika",3],
+    ["PY","Paraguay","Asunción","Südamerika",2],
+    ["PE","Peru","Lima","Südamerika",2],
+    ["SR","Suriname","Paramaribo","Südamerika",3],
+    ["UY","Uruguay","Montevideo","Südamerika",2],
+    ["VE","Venezuela","Caracas","Südamerika",2],
+    // Ozeanien
+    ["AU","Australien","Canberra","Ozeanien",1],
+    ["FJ","Fidschi","Suva","Ozeanien",3],
+    ["KI","Kiribati","Tarawa","Ozeanien",3],
+    ["MH","Marshallinseln","Majuro","Ozeanien",3],
+    ["FM","Mikronesien","Palikir","Ozeanien",3],
+    ["NR","Nauru","Yaren","Ozeanien",3],
+    ["NZ","Neuseeland","Wellington","Ozeanien",1],
+    ["PW","Palau","Ngerulmud","Ozeanien",3],
+    ["PG","Papua-Neuguinea","Port Moresby","Ozeanien",3],
+    ["WS","Samoa","Apia","Ozeanien",3],
+    ["SB","Salomonen","Honiara","Ozeanien",3],
+    ["TO","Tonga","Nuku'alofa","Ozeanien",3],
+    ["TV","Tuvalu","Funafuti","Ozeanien",3],
+    ["VU","Vanuatu","Port Vila","Ozeanien",3]
+  ].map(function(c){
+    return { code:c[0], name:c[1], capital:c[2], continent:c[3], tier:c[4] };
+  });
+
+  function flagEmoji(code){
+    var base = 127397; // 0x1F1E6 - 'A'.charCodeAt(0)
+    return String.fromCodePoint(base + code.charCodeAt(0)) + String.fromCodePoint(base + code.charCodeAt(1));
+  }
+
+  var CONTINENTS = ["Alle","Europa","Afrika","Asien","Nordamerika","Südamerika","Ozeanien"];
+  var DIFFICULTIES = [
+    { id:1, label:"Leicht", maxTier:1 },
+    { id:2, label:"Mittel", maxTier:2 },
+    { id:3, label:"Schwer", maxTier:3 }
+  ];
+  var COUNT_OPTIONS = [10,20,30];
+  var TIMER_OPTIONS = [
+    { id:0, label:"Kein Timer", seconds:0 },
+    { id:10, label:"10s", seconds:10 },
+    { id:15, label:"15s", seconds:15 },
+    { id:20, label:"20s", seconds:20 }
+  ];
+
+  /* ------------------------------ State ------------------------------ */
+  var state = {
+    mode: null,          // 'flag' | 'capital'
+    continent: "Alle",
+    difficulty: 2,
+    count: 10,
+    timer: 0,
+    questions: [],
+    currentIndex: 0,
+    correctCount: 0,
+    results: [],         // {ok, prompt, answerText, flag}
+    timerRemaining: 0,
+    timerHandle: null,
+    locked: false
+  };
+
+  /* ------------------------------ Helpers ------------------------------ */
+  function $(id){ return document.getElementById(id); }
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
+    $(id).classList.add("active");
+    window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+  }
+
+  function poolFor(continent, difficulty){
+    var maxTier = DIFFICULTIES.find(function(d){return d.id===difficulty;}).maxTier;
+    var pool = COUNTRIES.filter(function(c){
+      return (continent==="Alle" || c.continent===continent) && c.tier<=maxTier;
+    });
+    if(pool.length < 4){
+      // fallback: ignore difficulty restriction within continent
+      pool = COUNTRIES.filter(function(c){ return continent==="Alle" || c.continent===continent; });
+    }
+    if(pool.length < 4){
+      // fallback: ignore continent restriction too
+      pool = COUNTRIES.slice();
+    }
+    return pool;
+  }
+
+  /* ------------------------------ Highscore ------------------------------ */
+  function hsKey(mode, continent, difficulty){
+    return "weltquiz_hs_" + mode + "_" + continent + "_" + difficulty;
+  }
+  function getHighscore(mode, continent, difficulty){
+    try{
+      var raw = localStorage.getItem(hsKey(mode, continent, difficulty));
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+  function setHighscoreIfBetter(mode, continent, difficulty, correct, total){
+    var key = hsKey(mode, continent, difficulty);
+    var current = getHighscore(mode, continent, difficulty);
+    var ratio = total>0 ? correct/total : 0;
+    var currentRatio = current ? (current.total>0 ? current.correct/current.total : 0) : -1;
+    var isNewRecord = !current || ratio > currentRatio || (ratio === currentRatio && total > current.total);
+    if(isNewRecord){
+      try{
+        localStorage.setItem(key, JSON.stringify({correct:correct, total:total, date:new Date().toISOString()}));
+      }catch(e){}
+    }
+    return isNewRecord;
+  }
+  function renderHighscoreStrip(){
+    var strip = $("highscoreStrip");
+    strip.innerHTML = "";
+    var any = false;
+    ["flag","capital"].forEach(function(mode){
+      var best = null;
+      DIFFICULTIES.forEach(function(d){
+        var hs = getHighscore(mode, "Alle", d.id);
+        if(hs && (!best || hs.correct/hs.total > best.correct/best.total)){
+          best = hs;
+        }
+      });
+      if(best){
+        any = true;
+        var pill = document.createElement("div");
+        pill.className = "stat-pill";
+        var label = mode==="flag" ? "Flaggenquiz" : "Länderquiz";
+        pill.innerHTML = label + " Bestleistung: <b>" + best.correct + "/" + best.total + "</b>";
+        strip.appendChild(pill);
+      }
+    });
+    if(!any){
+      strip.innerHTML = '<div class="stat-pill">Noch keine Runden gespielt — leg los!</div>';
+    }
+  }
+
+  /* ------------------------------ Setup screen ------------------------------ */
+  function buildChip(container, label, isSelected, onClick){
+    var chip = document.createElement("div");
+    chip.className = "chip" + (isSelected ? " selected" : "");
+    chip.textContent = label;
+    chip.addEventListener("click", onClick);
+    container.appendChild(chip);
+    return chip;
+  }
+
+  function renderSetupScreen(){
+    $("setupTitle").textContent = state.mode==="flag" ? "Flaggenquiz einrichten" : "Länderquiz einrichten";
+
+    var contWrap = $("continentChips"); contWrap.innerHTML = "";
+    CONTINENTS.forEach(function(c){
+      buildChip(contWrap, c, state.continent===c, function(){
+        state.continent = c;
+        renderSetupScreen();
+      });
+    });
+
+    var diffWrap = $("difficultyChips"); diffWrap.innerHTML = "";
+    DIFFICULTIES.forEach(function(d){
+      buildChip(diffWrap, d.label, state.difficulty===d.id, function(){
+        state.difficulty = d.id;
+        renderSetupScreen();
+      });
+    });
+
+    var countWrap = $("countChips"); countWrap.innerHTML = "";
+    var pool = poolFor(state.continent, state.difficulty);
+    COUNT_OPTIONS.concat(["Alle"]).forEach(function(n){
+      var value = n==="Alle" ? pool.length : n;
+      var label = n==="Alle" ? ("Alle (" + pool.length + ")") : String(n);
+      var selected = state.count === value || (n==="Alle" && state.count===pool.length && state.countIsAll);
+      buildChip(countWrap, label, state.count===value, function(){
+        state.count = value;
+        renderSetupScreen();
+      });
+    });
+
+    var timerWrap = $("timerChips"); timerWrap.innerHTML = "";
+    TIMER_OPTIONS.forEach(function(t){
+      buildChip(timerWrap, t.label, state.timer===t.seconds, function(){
+        state.timer = t.seconds;
+        renderSetupScreen();
+      });
+    });
+
+    $("poolHint").innerHTML = "In dieser Auswahl verfügbar: <b>" + pool.length + "</b> Länder.";
+    $("startQuizBtn").disabled = pool.length < 4;
+  }
+
+  document.querySelectorAll(".mode-card").forEach(function(card){
+    card.addEventListener("click", function(){
+      state.mode = card.getAttribute("data-mode");
+      state.continent = "Alle";
+      state.difficulty = 2;
+      state.count = 10;
+      state.timer = 0;
+      showScreen("screen-setup");
+      renderSetupScreen();
+    });
+  });
+
+  $("setupBack").addEventListener("click", function(){
+    renderHighscoreStrip();
+    showScreen("screen-home");
+  });
+  $("homeBtn").addEventListener("click", function(){
+    stopTimer();
+    renderHighscoreStrip();
+    showScreen("screen-home");
+  });
+
+  $("startQuizBtn").addEventListener("click", function(){
+    startQuiz();
+  });
+
+  /* ------------------------------ Quiz logic ------------------------------ */
+  function buildQuestions(){
+    var pool = poolFor(state.continent, state.difficulty);
+    var shuffled = shuffle(pool);
+    var n = Math.min(state.count, shuffled.length);
+    var chosen = shuffled.slice(0, n);
+    return chosen.map(function(correctCountry){
+      var distractorPool = pool.filter(function(c){ return c.code !== correctCountry.code; });
+      var distractors = shuffle(distractorPool).slice(0,3);
+      var options = shuffle([correctCountry].concat(distractors));
+      return { correct: correctCountry, options: options };
+    });
+  }
+
+  function startQuiz(){
+    state.questions = buildQuestions();
+    if(state.questions.length < 1) return;
+    state.currentIndex = 0;
+    state.correctCount = 0;
+    state.results = [];
+    showScreen("screen-quiz");
+    renderQuestion();
+  }
+
+  function stopTimer(){
+    if(state.timerHandle){ clearInterval(state.timerHandle); state.timerHandle = null; }
+  }
+
+  function renderQuestion(){
+    stopTimer();
+    state.locked = false;
+    $("feedbackRow").textContent = "";
+    $("feedbackRow").className = "feedback-row";
+
+    var q = state.questions[state.currentIndex];
+    var total = state.questions.length;
+    $("progressFill").style.width = Math.round((state.currentIndex/total)*100) + "%";
+    $("scoreBadge").textContent = state.correctCount + "/" + total + " · Frage " + (state.currentIndex+1) + "/" + total;
+
+    var flagEl = $("flagDisplay");
+    var mainEl = $("questionMain");
+    var labelEl = $("questionLabel");
+
+    if(state.mode === "flag"){
+      labelEl.textContent = "Welches Land gehört zu dieser Flagge?";
+      flagEl.style.display = "block";
+      flagEl.textContent = flagEmoji(q.correct.code);
+      mainEl.style.display = "none";
+    } else {
+      labelEl.textContent = "Was ist die Hauptstadt von diesem Land?";
+      flagEl.style.display = "block";
+      flagEl.textContent = flagEmoji(q.correct.code);
+      mainEl.style.display = "block";
+      mainEl.textContent = q.correct.name;
+    }
+
+    var grid = $("choicesGrid");
+    grid.innerHTML = "";
+    q.options.forEach(function(opt, idx){
+      var btn = document.createElement("button");
+      btn.className = "choice-btn";
+      btn.type = "button";
+      var text = state.mode === "flag" ? opt.name : opt.capital;
+      btn.innerHTML = '<span class="key">' + (idx+1) + '</span><span>' + text + "</span>";
+      btn.addEventListener("click", function(){ selectAnswer(opt, btn); });
+      grid.appendChild(btn);
+    });
+
+    if(state.timer > 0){
+      $("timerTrack").style.display = "block";
+      state.timerRemaining = state.timer;
+      updateTimerBar();
+      state.timerHandle = setInterval(function(){
+        state.timerRemaining -= 1;
+        updateTimerBar();
+        if(state.timerRemaining <= 0){
+          stopTimer();
+          selectAnswer(null, null);
+        }
+      }, 1000);
+    } else {
+      $("timerTrack").style.display = "none";
+    }
+  }
+
+  function updateTimerBar(){
+    var pct = Math.max(0, (state.timerRemaining/state.timer)*100);
+    var fill = $("timerFill");
+    fill.style.width = pct + "%";
+    fill.classList.toggle("low", state.timerRemaining <= 3);
+  }
+
+  function selectAnswer(chosenOption, btnEl){
+    if(state.locked) return;
+    state.locked = true;
+    stopTimer();
+
+    var q = state.questions[state.currentIndex];
+    var isCorrect = chosenOption && chosenOption.code === q.correct.code;
+    if(isCorrect) state.correctCount++;
+
+    var buttons = $("choicesGrid").querySelectorAll(".choice-btn");
+    buttons.forEach(function(btn, idx){
+      btn.disabled = true;
+      var opt = q.options[idx];
+      if(opt.code === q.correct.code){
+        btn.classList.add("correct");
+      } else if(btn === btnEl){
+        btn.classList.add("wrong");
+      }
+    });
+
+    var feedback = $("feedbackRow");
+    var correctText = state.mode === "flag" ? q.correct.name : q.correct.capital;
+    if(isCorrect){
+      feedback.textContent = "Richtig!";
+      feedback.className = "feedback-row correct";
+    } else {
+      feedback.textContent = chosenOption ? ("Leider falsch — richtig war " + correctText) : ("Zeit abgelaufen — richtig war " + correctText);
+      feedback.className = "feedback-row wrong";
+    }
+
+    state.results.push({
+      ok: isCorrect,
+      flag: flagEmoji(q.correct.code),
+      name: q.correct.name,
+      capital: q.correct.capital
+    });
+
+    setTimeout(function(){
+      state.currentIndex++;
+      if(state.currentIndex < state.questions.length){
+        renderQuestion();
+      } else {
+        finishQuiz();
+      }
+    }, 1100);
+  }
+
+  function finishQuiz(){
+    var total = state.questions.length;
+    $("progressFill").style.width = "100%";
+    var isRecord = setHighscoreIfBetter(state.mode, state.continent, state.difficulty, state.correctCount, total);
+
+    $("resultScore").textContent = state.correctCount + "/" + total;
+    var pct = Math.round((state.correctCount/total)*100);
+    var msg;
+    if(pct === 100) msg = "Perfekt! Du kennst dich richtig gut aus.";
+    else if(pct >= 75) msg = "Stark! Sehr gutes Ergebnis.";
+    else if(pct >= 50) msg = "Solide — mit etwas Übung wird's noch besser.";
+    else msg = "Kein Problem, einfach nochmal versuchen!";
+    $("resultSub").textContent = pct + "% richtig · " + msg;
+
+    var banner = $("recordBanner");
+    if(isRecord){
+      banner.style.display = "block";
+      banner.textContent = "🎉 Neue Bestleistung für diese Einstellungen!";
+    } else {
+      banner.style.display = "none";
+    }
+
+    var list = $("reviewList");
+    list.innerHTML = "";
+    state.results.forEach(function(r){
+      var item = document.createElement("div");
+      item.className = "review-item " + (r.ok ? "ok" : "bad");
+      item.innerHTML =
+        '<span class="mark">' + (r.ok ? "✓" : "✗") + '</span>' +
+        '<span class="flag">' + r.flag + '</span>' +
+        '<span class="txt"><b>' + r.name + '</b><span>' + r.capital + '</span></span>';
+      list.appendChild(item);
+    });
+
+    showScreen("screen-result");
+  }
+
+  $("retryBtn").addEventListener("click", function(){ startQuiz(); });
+  $("againSettingsBtn").addEventListener("click", function(){
+    showScreen("screen-setup");
+    renderSetupScreen();
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(!$("screen-quiz").classList.contains("active")) return;
+    var idx = parseInt(e.key, 10);
+    if(idx >= 1 && idx <= 4){
+      var buttons = $("choicesGrid").querySelectorAll(".choice-btn");
+      if(buttons[idx-1] && !buttons[idx-1].disabled){
+        buttons[idx-1].click();
+      }
+    }
+  });
+
+  renderHighscoreStrip();
+})();
+</script>
+</body>
+</html>
