@@ -84,36 +84,83 @@
   h1.title{ font-size:1.7rem; margin:0 0 4px; letter-spacing:-0.02em; }
   p.subtitle{ margin:0; color:var(--text-dim); line-height:1.5; font-size:0.95rem; }
 
-  /* Mode cards on home screen */
-  .mode-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:6px; }
-  @media (max-width:520px){ .mode-grid{ grid-template-columns:1fr; } }
-  .mode-card{
-    background: var(--card);
-    border:1px solid var(--border);
-    border-radius: var(--radius);
-    padding:22px 18px;
-    cursor:pointer;
-    transition: transform .15s ease, border-color .15s ease, background .15s ease;
-    text-align:left;
-    display:flex; flex-direction:column; gap:10px;
+  /* ---------- Home hero ---------- */
+  :root{
+    --brass: #cda449;
+    --brass-soft: rgba(205,164,73,0.14);
+    --brass-line: rgba(205,164,73,0.4);
+    --font-display: 'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,'Times New Roman',serif;
   }
-  .mode-card:hover{ transform: translateY(-3px); border-color:#3a3f55; background: var(--card-hover); }
-  .mode-card .emoji{ font-size:2.2rem; }
-  .mode-card h3{ margin:0; font-size:1.05rem; }
-  .mode-card p{ margin:0; color:var(--text-dim); font-size:0.85rem; line-height:1.4; }
+  .hero{ display:flex; flex-direction:column; padding:8px 0 4px; }
+  .hero-eyebrow{
+    margin:0 0 18px;
+    font-size:0.72rem;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-title{
+    margin:0 0 18px;
+    font-family: var(--font-display);
+    font-weight:400;
+    font-size: clamp(2.1rem, 7vw, 3rem);
+    line-height:1.12;
+    letter-spacing:-0.01em;
+    text-wrap: balance;
+    color: var(--text);
+  }
+  .hero-subtitle{
+    margin:0 0 28px;
+    max-width:46ch;
+    color: var(--text-dim);
+    line-height:1.6;
+    font-size:0.98rem;
+  }
+  .hero-rule{
+    height:1px;
+    background: linear-gradient(90deg, var(--brass-line), transparent 85%);
+    margin:0 0 28px;
+  }
+
+  .entry-list{ display:flex; flex-direction:column; border-top:1px solid var(--border); margin-bottom:26px; }
+  .entry-row{
+    display:flex; align-items:center; gap:16px;
+    background:none; border:none; border-bottom:1px solid var(--border);
+    padding:20px 4px;
+    cursor:pointer; text-align:left; width:100%;
+    transition: padding-left .2s ease, border-color .2s ease;
+  }
+  .entry-row:hover{ padding-left:12px; border-color:#3a3f55; }
+  .entry-glyph{
+    font-size:1.7rem; line-height:1; flex-shrink:0; width:1.7rem; text-align:center;
+    filter: grayscale(1) contrast(1.15) brightness(1.3);
+    opacity:0.82;
+  }
+  .entry-body{ flex:1; display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .entry-title{ font-family: var(--font-display); font-size:1.2rem; color:var(--text); }
+  .entry-desc{ font-size:0.85rem; color:var(--text-dim); }
+  .entry-arrow{
+    flex-shrink:0; color:var(--brass); font-size:1.1rem;
+    transform: translateX(0); transition: transform .2s ease;
+  }
+  .entry-row:hover .entry-arrow{ transform: translateX(4px); }
 
   .stats-strip{
-    display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;
+    display:flex; gap:18px; flex-wrap:wrap;
+    font-size:0.78rem; color:var(--text-dim);
   }
-  .stat-pill{
-    background: var(--bg-elevated);
-    border:1px solid var(--border);
-    border-radius: 999px;
-    padding:6px 14px;
-    font-size:0.78rem;
-    color: var(--text-dim);
+  .stat-pill{ font-variant-numeric: tabular-nums; }
+  .stat-pill b{ color: var(--brass); font-weight:600; }
+
+  .hero-in{
+    opacity:0; transform: translateY(10px);
+    animation: heroIn .5s ease calc(var(--d) * 70ms) forwards;
   }
-  .stat-pill b{ color:var(--text); }
+  @keyframes heroIn{ to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){
+    .hero-in{ animation:none; opacity:1; transform:none; }
+  }
 
   /* Setup screen */
   .card{
@@ -299,23 +346,34 @@
 
   <!-- HOME -->
   <section class="screen active" id="screen-home">
-    <h1 class="title">Teste dein Weltwissen</h1>
-    <p class="subtitle">Zwei Quizmodi rund um Länder, Flaggen und Hauptstädte — mit Kontinent-Filter, Schwierigkeitsgraden und Timer.</p>
+    <div class="hero">
+      <p class="hero-eyebrow hero-in" style="--d:0">195 Länder · 6 Kontinente · 2 Modi</p>
+      <h1 class="hero-title hero-in" style="--d:1">Wie gut kennst du<br>die Welt wirklich?</h1>
+      <p class="hero-subtitle hero-in" style="--d:2">Flaggen erkennen, Hauptstädte zuordnen — mit Kontinent-Filter, Schwierigkeitsgraden und Timer, ganz wie du magst.</p>
 
-    <div class="mode-grid">
-      <button class="mode-card" data-mode="flag" type="button">
-        <div class="emoji">🏳️</div>
-        <h3>Flaggenquiz</h3>
-        <p>Errate das Land anhand seiner Flagge.</p>
-      </button>
-      <button class="mode-card" data-mode="capital" type="button">
-        <div class="emoji">🌍</div>
-        <h3>Länderquiz</h3>
-        <p>Errate die Hauptstadt eines Landes.</p>
-      </button>
+      <div class="hero-rule hero-in" style="--d:3"></div>
+
+      <div class="entry-list">
+        <button class="entry-row mode-card hero-in" data-mode="flag" type="button" style="--d:4">
+          <span class="entry-glyph">🏳️</span>
+          <span class="entry-body">
+            <span class="entry-title">Flaggenquiz</span>
+            <span class="entry-desc">Errate das Land anhand seiner Flagge.</span>
+          </span>
+          <span class="entry-arrow" aria-hidden="true">→</span>
+        </button>
+        <button class="entry-row mode-card hero-in" data-mode="capital" type="button" style="--d:5">
+          <span class="entry-glyph">🌍</span>
+          <span class="entry-body">
+            <span class="entry-title">Länderquiz</span>
+            <span class="entry-desc">Errate die Hauptstadt eines Landes.</span>
+          </span>
+          <span class="entry-arrow" aria-hidden="true">→</span>
+        </button>
+      </div>
+
+      <div class="stats-strip hero-in" id="highscoreStrip" style="--d:6"></div>
     </div>
-
-    <div class="stats-strip" id="highscoreStrip"></div>
   </section>
 
   <!-- SETUP -->
