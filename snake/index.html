@@ -156,6 +156,21 @@
   }
   .skin:hover{ transform: scale(1.08); }
   .skin.sel{ border-color: var(--text); transform: scale(1.12); }
+  /* Modus-Auswahl */
+  .modes{ display:flex; gap:10px; margin-top:8px; }
+  .mode-card{
+    flex:1; text-align:left; cursor:pointer;
+    background: var(--bg-elevated);
+    border:2px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding:12px 12px 11px;
+    transition: border .12s, transform .1s, background .12s;
+  }
+  .mode-card:hover{ transform: translateY(-1px); }
+  .mode-card.sel{ border-color: var(--accent); background: rgba(109,91,255,0.12); }
+  .mode-card.sel.hunter{ border-color: var(--danger); background: rgba(255,91,110,0.12); }
+  .mode-card .mc-title{ font-weight:800; font-size:0.98rem; display:flex; align-items:center; gap:7px; }
+  .mode-card .mc-desc{ color: var(--text-dim); font-size:0.74rem; margin-top:5px; line-height:1.45; }
   .btn{
     width:100%; margin-top:8px;
     padding:14px; border:none; border-radius: var(--radius-sm);
@@ -195,7 +210,8 @@
 <div class="hud" id="hud" style="display:none;">
   <div class="stats">
     <div class="stat-pill big"><span class="label">Länge</span><span class="val" id="hudLen">0</span></div>
-    <div class="stat-pill"><span class="label">Rang</span><span class="val" id="hudRank">–</span></div>
+    <div class="stat-pill" id="pillRank"><span class="label">Rang</span><span class="val" id="hudRank">–</span></div>
+    <div class="stat-pill" id="pillTime" style="display:none;"><span class="label">Überlebt</span><span class="val" id="hudTime">0s</span></div>
   </div>
   <div class="leaderboard">
     <h3>🏆 Bestenliste</h3>
@@ -210,6 +226,19 @@
   <div class="panel">
     <div class="brand"><span class="logo">🐍</span> Schlange.io</div>
     <p class="subtitle">Steuere deine Schlange mit der Maus, friss leuchtendes Futter und werde die längste Schlange der Arena. Bring Gegner dazu, in dich zu krachen — und schnapp dir ihre Reste.</p>
+    <div class="field">
+      <label>Modus</label>
+      <div class="modes" id="modePicker">
+        <div class="mode-card sel" data-mode="klassik">
+          <div class="mc-title">🐍 Klassik</div>
+          <div class="mc-desc">Snake.io pur: konkurriere mit anderen Schlangen um Futter und werde die Nummer 1.</div>
+        </div>
+        <div class="mode-card hunter" data-mode="jaeger">
+          <div class="mc-title">🎯 Jäger</div>
+          <div class="mc-desc">Survival: aggressive Jäger machen Jagd auf dich, treibende Minen lauern. Überlebe so lange wie möglich.</div>
+        </div>
+      </div>
+    </div>
     <div class="field">
       <label for="nameInput">Dein Name</label>
       <input type="text" id="nameInput" maxlength="14" placeholder="Spieler" autocomplete="off">
@@ -232,7 +261,7 @@
     <p class="killer" id="killerText"></p>
     <div class="dead-stats">
       <div class="dead-stat"><div class="v" id="finalLen">0</div><div class="l">Länge</div></div>
-      <div class="dead-stat"><div class="v" id="finalRank">–</div><div class="l">Bester Rang</div></div>
+      <div class="dead-stat"><div class="v" id="finalRank">–</div><div class="l" id="finalMidLabel">Bester Rang</div></div>
       <div class="dead-stat"><div class="v" id="finalKills">0</div><div class="l">Kills</div></div>
     </div>
     <button class="btn" id="againBtn">Nochmal spielen</button>
@@ -276,6 +305,10 @@ let spawnGlow = 0;          // Sekunden-Countdown für "DU"-Hervorhebung nach Sp
 let selectedSkin = SKINS[0];
 let animFrame = null;
 let starPhase = 0;
+let gameMode = 'klassik';   // 'klassik' | 'jaeger'
+let hazards = [];           // treibende Minen (nur Jäger-Modus)
+let survivalTime = 0;       // überlebte Sekunden (Jäger-Modus)
+let hunterTimer = 0;        // Countdown bis zum nächsten Jäger-Spawn
 
 // ---------- Utility ----------
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -325,18 +358,20 @@ function createSnake(opts){
     x: start.x, y: start.y,
     angle,
     targetAngle: angle,
-    baseSpeed: 2.15,
+    baseSpeed: opts.hunter ? 2.5 : 2.15,
     speed: 2.15,
     score: opts.score || 10,
     points: [],
     dead: false,
     boosting: false,
+    hunter: !!opts.hunter,   // aggressiver Jäger (Jäger-Modus)
     // KI
     ai: !opts.isPlayer ? {
       wanderAngle: angle,
       retarget: 0,
       food: null,
-      panic: 0
+      panic: 0,
+      hunter: !!opts.hunter
     } : null
   };
   // Startsegmente
@@ -357,16 +392,31 @@ function startGame(){
   resize(); // sicherstellen, dass die Canvas korrekt dimensioniert ist (Schutz gegen 0×0)
   const name = (document.getElementById('nameInput').value || '').trim().slice(0,14) || 'Spieler';
   snakes = [];
+  hazards = [];
   initFood();
   player = createSnake({ isPlayer: true, name, color: selectedSkin, score: 26 });
   snakes.push(player);
-  for (let i = 0; i < BOT_TARGET; i++) spawnBot();
+
+  const jaeger = gameMode === 'jaeger';
+  if (jaeger){
+    // Start: ein paar normale Bots + zwei Jäger + Minen
+    for (let i = 0; i < 8; i++) spawnBot();
+    for (let i = 0; i < 2; i++) spawnHunter();
+    for (let i = 0; i < 10; i++) spawnHazard();
+  } else {
+    for (let i = 0; i < BOT_TARGET; i++) spawnBot();
+  }
+
   camera.x = player.x; camera.y = player.y; camera.zoom = zoomFor(player.score);
   bestRank = 99; killCount = 0; spawnGlow = 3.2;
+  survivalTime = 0; hunterTimer = 8;
   running = true;
   document.getElementById('startScreen').classList.add('hidden');
   document.getElementById('deathScreen').classList.add('hidden');
   document.getElementById('hud').style.display = 'block';
+  // HUD an Modus anpassen
+  document.getElementById('pillRank').style.display = jaeger ? 'none' : 'flex';
+  document.getElementById('pillTime').style.display = jaeger ? 'flex' : 'none';
   mouse.x = 0; mouse.y = 0; boosting = false;
   lastT = performance.now();
   if (animFrame) cancelAnimationFrame(animFrame);
@@ -377,6 +427,35 @@ function spawnBot(){
   const name = BOT_NAMES[randInt(0, BOT_NAMES.length-1)] + (Math.random() < 0.4 ? randInt(1,99) : '');
   const b = createSnake({ name, score: randInt(8, 60), color: SKINS[randInt(0, SKINS.length-1)] });
   snakes.push(b);
+}
+
+// Aggressiver Jäger: spawnt am Rand der Arena, jagt den Spieler
+function spawnHunter(){
+  const a = Math.random() * Math.PI * 2;
+  const r = WORLD_RADIUS - rand(200, 500);
+  const pos = { x: Math.cos(a) * r, y: Math.sin(a) * r };
+  const names = ['Jäger','Predator','Reaper','Hunter','Stalker','Shadow','Fang','Nemesis'];
+  const b = createSnake({
+    name: names[randInt(0, names.length-1)] + ' ' + randInt(1,9),
+    score: randInt(30, 70),
+    color: '#ff3b52',
+    hunter: true,
+    pos
+  });
+  snakes.push(b);
+}
+
+// Treibende Mine: tötet jede Schlange bei Berührung
+function spawnHazard(){
+  const p = randomWorldPoint(300);
+  const a = Math.random() * Math.PI * 2;
+  const sp = rand(0.3, 0.9);
+  hazards.push({
+    x: p.x, y: p.y,
+    vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+    r: rand(22, 34),
+    spin: Math.random() * Math.PI * 2
+  });
 }
 
 // ---------- Eingabe ----------
@@ -456,10 +535,29 @@ function update(dt){
     eatFood(s);
   }
 
+  // Gefahren (Minen) bewegen + Kollision (nur Jäger-Modus)
+  if (gameMode === 'jaeger'){
+    updateHazards(dt);
+    survivalTime += dt / 60;
+    // Schwierigkeit steigt: regelmäßig neue Jäger dazu
+    hunterTimer -= dt / 60;
+    if (hunterTimer <= 0){
+      const hunters = snakes.filter(s => !s.dead && s.hunter).length;
+      if (hunters < 9) spawnHunter();
+      hunterTimer = clamp(11 - survivalTime * 0.15, 4, 11); // wird mit der Zeit schneller
+    }
+  }
+
   // Tote entfernen -> Futter, Bots nachfüllen
   cleanupDead();
-  while (snakes.filter(s => !s.dead && !s.isPlayer).length < BOT_TARGET && snakes.length < BOT_TARGET + 4){
-    spawnBot();
+  if (gameMode === 'jaeger'){
+    // normale (Futter-)Bots konstant halten, Jäger regeln über den Timer
+    const normals = snakes.filter(s => !s.dead && !s.isPlayer && !s.hunter).length;
+    if (normals < 8 && snakes.length < 40) spawnBot();
+  } else {
+    while (snakes.filter(s => !s.dead && !s.isPlayer).length < BOT_TARGET && snakes.length < BOT_TARGET + 4){
+      spawnBot();
+    }
   }
   // Futter auffüllen
   while (foods.length < FOOD_COUNT) spawnFood();
@@ -529,6 +627,19 @@ function updateBotAI(s, dt){
     ai.food = null;
     s.targetAngle = Math.atan2(-s.y, -s.x) + rand(-0.3, 0.3);
     s.boosting = false;
+    return;
+  }
+
+  // Jäger: verfolgen aktiv den Spieler und schneiden ihm den Weg ab
+  if (ai.hunter && player && !player.dead){
+    // etwas voraushalten (Interception), damit sie den Spieler abfangen
+    const lead = 22;
+    const aimX = player.x + Math.cos(player.angle) * player.speed * lead;
+    const aimY = player.y + Math.sin(player.angle) * player.speed * lead;
+    s.targetAngle = Math.atan2(aimY - s.y, aimX - s.x);
+    const dP = Math.hypot(player.x - s.x, player.y - s.y);
+    // in der Nähe boosten für den Angriff
+    s.boosting = s.score > 20 && dP < 520;
     return;
   }
 
@@ -649,6 +760,39 @@ function eatFood(s){
   }
 }
 
+// ---------- Gefahren / Minen (Jäger-Modus) ----------
+function updateHazards(dt){
+  for (const hz of hazards){
+    hz.x += hz.vx * dt;
+    hz.y += hz.vy * dt;
+    hz.spin += 0.02 * dt;
+    // an der Arena-Wand abprallen
+    const d = Math.hypot(hz.x, hz.y);
+    const lim = WORLD_RADIUS - hz.r;
+    if (d > lim){
+      const nx = hz.x / d, ny = hz.y / d;
+      hz.x = nx * lim; hz.y = ny * lim;
+      const dot = hz.vx * nx + hz.vy * ny;
+      hz.vx -= 2 * dot * nx;
+      hz.vy -= 2 * dot * ny;
+    }
+  }
+  // Kollision: Kopf einer Schlange trifft Mine -> Tod
+  for (const s of snakes){
+    if (s.dead) continue;
+    const sr = radiusFor(s.score);
+    for (const hz of hazards){
+      const rr = hz.r + sr * 0.7;
+      if (Math.abs(hz.x - s.x) > rr || Math.abs(hz.y - s.y) > rr) continue;
+      if (dist2(hz.x, hz.y, s.x, s.y) < rr * rr){
+        s.minedeath = true;
+        killSnake(s, null);
+        break;
+      }
+    }
+  }
+}
+
 // ---------- Rendering ----------
 function resize(){
   DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -718,6 +862,43 @@ function render(){
     drawSpawnMarker(z);
     drawSnake(player, z);
   }
+
+  // Gefahren / Minen (Jäger-Modus) – zuoberst, damit die Bedrohung klar ist
+  for (const hz of hazards){
+    if (dist2(hz.x, hz.y, camera.x, camera.y) > vr2) continue;
+    drawHazard(hz, z);
+  }
+}
+
+function drawHazard(hz, z){
+  const p = worldToScreen(hz.x, hz.y);
+  const R = hz.r * z;
+  const spikes = 9;
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(hz.spin);
+  // Stachelkranz
+  ctx.beginPath();
+  for (let i = 0; i < spikes * 2; i++){
+    const ang = (i / (spikes * 2)) * Math.PI * 2;
+    const rr = (i % 2 === 0) ? R : R * 0.62;
+    ctx.lineTo(Math.cos(ang) * rr, Math.sin(ang) * rr);
+  }
+  ctx.closePath();
+  ctx.fillStyle = '#3a0d14';
+  ctx.strokeStyle = '#ff3b52';
+  ctx.lineWidth = 2.2;
+  ctx.shadowColor = '#ff3b52';
+  ctx.shadowBlur = 14 * z;
+  ctx.fill();
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  // Kern
+  ctx.beginPath();
+  ctx.arc(0, 0, R * 0.4, 0, Math.PI * 2);
+  ctx.fillStyle = '#ff5b6e';
+  ctx.fill();
+  ctx.restore();
 }
 
 // "DU"-Hervorhebung direkt nach dem Spawn: pulsierender Ring + Pfeil,
@@ -865,6 +1046,9 @@ function updateHUD(){
 
   document.getElementById('hudLen').textContent = Math.floor(player.score);
   document.getElementById('hudRank').textContent = rank > 0 ? `${rank} / ${alive.length}` : '–';
+  if (gameMode === 'jaeger'){
+    document.getElementById('hudTime').textContent = Math.floor(survivalTime) + 's';
+  }
 
   // Bestenliste Top 8
   const rows = sorted.slice(0, 8).map((s, i) => {
@@ -894,12 +1078,21 @@ function drawMinimap(sorted){
   mctx.stroke();
 
   const scale = (size/2 - 3) / WORLD_RADIUS;
+  // Minen zuerst
+  for (const hz of hazards){
+    const mx = size/2 + hz.x * scale;
+    const my = size/2 + hz.y * scale;
+    mctx.beginPath();
+    mctx.arc(mx, my, 1.6, 0, Math.PI*2);
+    mctx.fillStyle = '#ff3b52';
+    mctx.fill();
+  }
   for (const s of sorted){
     if (s.dead) continue;
     const mx = size/2 + s.x * scale;
     const my = size/2 + s.y * scale;
     mctx.beginPath();
-    mctx.arc(mx, my, s.isPlayer ? 3.2 : 1.8, 0, Math.PI*2);
+    mctx.arc(mx, my, s.isPlayer ? 3.2 : (s.hunter ? 2.4 : 1.8), 0, Math.PI*2);
     mctx.fillStyle = s.isPlayer ? '#fff' : s.color;
     mctx.fill();
   }
@@ -914,12 +1107,20 @@ function onPlayerDeath(s){
   running = false;
   setTimeout(() => {
     document.getElementById('finalLen').textContent = Math.floor(s.score);
-    document.getElementById('finalRank').textContent = bestRank < 99 ? '#' + bestRank : '–';
     document.getElementById('finalKills').textContent = killCount;
+    if (gameMode === 'jaeger'){
+      document.getElementById('finalMidLabel').textContent = 'Überlebt';
+      document.getElementById('finalRank').textContent = Math.floor(survivalTime) + 's';
+    } else {
+      document.getElementById('finalMidLabel').textContent = 'Bester Rang';
+      document.getElementById('finalRank').textContent = bestRank < 99 ? '#' + bestRank : '–';
+    }
     const killer = s.killedBy;
-    document.getElementById('killerText').innerHTML = killer
-      ? `Gefressen von <b>${escapeHtml(killer)}</b>`
-      : `Gegen die Arena-Grenze gekracht`;
+    document.getElementById('killerText').innerHTML = s.minedeath
+      ? `Von einer <b>Mine</b> zerfetzt`
+      : killer
+        ? `Gefressen von <b>${escapeHtml(killer)}</b>`
+        : `Gegen die Arena-Grenze gekracht`;
     document.getElementById('hud').style.display = 'none';
     document.getElementById('deathScreen').classList.remove('hidden');
   }, 350);
@@ -942,6 +1143,17 @@ function buildSkinPicker(){
   });
 }
 
+function buildModePicker(){
+  const picker = document.getElementById('modePicker');
+  [...picker.children].forEach(card => {
+    card.addEventListener('click', () => {
+      gameMode = card.dataset.mode;
+      [...picker.children].forEach(c => c.classList.remove('sel'));
+      card.classList.add('sel');
+    });
+  });
+}
+
 document.getElementById('playBtn').addEventListener('click', startGame);
 document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') startGame(); });
 document.getElementById('againBtn').addEventListener('click', startGame);
@@ -957,6 +1169,7 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0){
 
 // ---------- Boot ----------
 buildSkinPicker();
+buildModePicker();
 resize();
 // Ambient-Vorschau im Hintergrund (statischer Sternenhimmel wäre möglich – hier nur Farbe)
 </script>
