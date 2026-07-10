@@ -272,6 +272,7 @@ let mouse = { x: 0, y: 0 };
 let boosting = false;
 let bestRank = 99;
 let killCount = 0;
+let spawnGlow = 0;          // Sekunden-Countdown für "DU"-Hervorhebung nach Spawn
 let selectedSkin = SKINS[0];
 let animFrame = null;
 let starPhase = 0;
@@ -353,14 +354,15 @@ function zoomFor(score){ return clamp(1.05 - Math.sqrt(score) * 0.012, 0.55, 1.0
 
 // ---------- Setup / Spielstart ----------
 function startGame(){
+  resize(); // sicherstellen, dass die Canvas korrekt dimensioniert ist (Schutz gegen 0×0)
   const name = (document.getElementById('nameInput').value || '').trim().slice(0,14) || 'Spieler';
   snakes = [];
   initFood();
-  player = createSnake({ isPlayer: true, name, color: selectedSkin, score: 12 });
+  player = createSnake({ isPlayer: true, name, color: selectedSkin, score: 26 });
   snakes.push(player);
   for (let i = 0; i < BOT_TARGET; i++) spawnBot();
   camera.x = player.x; camera.y = player.y; camera.zoom = zoomFor(player.score);
-  bestRank = 99; killCount = 0;
+  bestRank = 99; killCount = 0; spawnGlow = 3.2;
   running = true;
   document.getElementById('startScreen').classList.add('hidden');
   document.getElementById('deathScreen').classList.add('hidden');
@@ -417,6 +419,7 @@ function loop(t){
 }
 
 function update(dt){
+  if (spawnGlow > 0) spawnGlow -= dt / 60;
   // Ziel-Winkel Spieler
   if (player && !player.dead){
     player.targetAngle = Math.atan2(mouse.y + (camera.y - player.y)*camera.zoom, mouse.x + (camera.x - player.x)*camera.zoom);
@@ -489,7 +492,7 @@ function moveSnake(s, dt){
   s.speed += (targetSpeed - s.speed) * 0.15 * dt;
 
   // sanfte Drehung
-  const turnRate = 0.16 * (s.boosting ? 0.8 : 1);
+  const turnRate = (s.isPlayer ? 0.22 : 0.16) * (s.boosting ? 0.8 : 1);
   s.angle = lerpAngle(s.angle, s.targetAngle, clamp(turnRate * dt, 0, 1));
 
   // Kopf bewegen
@@ -705,12 +708,44 @@ function render(){
   }
   ctx.shadowBlur = 0;
 
-  // Schlangen (nach Größe sortiert, große zuletzt/oben)
+  // Schlangen (nach Größe sortiert, große zuletzt/oben) – Spieler IMMER zuletzt/zuoberst
   const ordered = snakes.slice().sort((a,b) => a.score - b.score);
   for (const s of ordered){
-    if (s.dead) continue;
+    if (s.dead || s.isPlayer) continue;
     drawSnake(s, z);
   }
+  if (player && !player.dead){
+    drawSpawnMarker(z);
+    drawSnake(player, z);
+  }
+}
+
+// "DU"-Hervorhebung direkt nach dem Spawn: pulsierender Ring + Pfeil,
+// damit man die eigene Schlange sofort findet.
+function drawSpawnMarker(z){
+  if (spawnGlow <= 0) return;
+  const head = worldToScreen(player.x, player.y);
+  const r = radiusFor(player.score) * z;
+  const t = spawnGlow;                         // 3.2 -> 0
+  const pulse = 1 + Math.sin(starPhase * 10) * 0.12;
+  const ringR = (r * 2.6 + 14) * pulse;
+  ctx.save();
+  ctx.globalAlpha = clamp(t / 3.2, 0, 1) * 0.9;
+  ctx.beginPath();
+  ctx.arc(head.x, head.y, ringR, 0, Math.PI * 2);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([8, 8]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // "DU"-Label über dem Ring
+  ctx.globalAlpha = clamp(t / 3.2, 0, 1);
+  ctx.font = '800 14px -apple-system, Segoe UI, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('▼ DU', head.x, head.y - ringR - 6);
+  ctx.restore();
 }
 
 function drawGrid(z){
