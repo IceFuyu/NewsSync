@@ -1,28 +1,28 @@
 {
   "ki": {
-    "summary": "Die erste Juliwoche 2026 stand im Zeichen massiver strategischer Neuausrichtungen der Tech-Giganten: Meta drängt mit einer eigenen Cloud-Plattform in den KI-Infrastrukturmarkt, während Microsoft mit der 'Frontier Company' den Unternehmenskundendienst neu erfindet. Gleichzeitig rüsten sich KI-Labs wie Anthropic mit eigenen Chips gegen die Abhängigkeit von Nvidia. Auf regulatorischer Seite nähert sich der EU AI Act mit seinen Transparenzpflichten dem August-Stichtag, während Forschung und Risikokapital den nächsten Hardware-Zyklus einläuten: physikalisch-situierte KI-Systeme für die Robotik.",
+    "summary": "Die KI-Welt steht vor einem historischen Doppel-Börsengang: Sowohl OpenAI als auch Anthropic haben IPO-Unterlagen eingereicht, wobei OpenAI eine Bewertung von bis zu einer Billion Dollar anstrebt. Technologisch heizt Google mit dem bevorstehenden Launch von Gemini 3.5 Pro den Wettbewerb um Frontier-Modelle weiter an, während TSMC mit Rekordquartalsumsätzen die ungebrochen explosive Nachfrage nach KI-Chips belegt. Gleichzeitig verschärft sich der regulatorische Druck erheblich: Der EU AI Act tritt Anfang August verbindlich in Kraft und der EDPB hat neue Leitlinien zum Web Scraping verabschiedet, die direkt in das Training großer Sprachmodelle eingreifen.",
     "highlights": [
-      "Meta launcht 'Muse Spark' und tritt als Cloud-Anbieter in direkten Wettbewerb mit AWS, Azure und Google Cloud – die Aktie legte bis zu 10 Prozent zu.",
-      "Anthropic verhandelt mit Samsung über einen eigenen Inferenz-Chip im 2-Nanometer-Verfahren und folgt damit dem Jalapeño-Chip von OpenAI/Broadcom.",
-      "Microsoft investiert 2,5 Milliarden Dollar in die 'Frontier Company' mit 6.000 KI-Ingenieuren, die direkt bei Unternehmenskunden eingesetzt werden sollen.",
-      "Der EU AI Act tritt am 2. August 2026 mit Transparenzpflichten für Chatbots und Deepfakes in Kraft; Strafen für GPAI-Anbieter sind jetzt möglich.",
-      "KI-Weltmodelle für die Robotik erleben einen Finanzierungsboom – Kling AI sicherte sich allein 3 Milliarden Euro bei einer Bewertung von 18 Milliarden Euro."
+      "OpenAI und Anthropic reichen zeitgleich IPO-Unterlagen ein – ein historischer Doppel-Börsengang der beiden führenden KI-Unternehmen mit Bewertungen im Billionen-Dollar-Bereich.",
+      "Google Gemini 3.5 Pro erscheint am 17. Juli 2026 nach einem kompletten Architektur-Neuaufbau und tritt mit 2-Mio.-Token-Kontextfenster gegen GPT-5.6 und Fable 5 an.",
+      "TSMC meldet Q2-Rekord mit 39,6 Mrd. USD Umsatz (+47,8 % YoY) – der KI-Chip-Boom zeigt keinerlei Abschwächung.",
+      "EU AI Act gilt ab 2. August 2026 verbindlich: Bußgelder bis 35 Mio. Euro drohen, viele Unternehmen sind noch nicht compliant.",
+      "Anthropic verhandelt mit Samsung über eigene Inferenz-Chips, um monatliche Compute-Kosten von 1,25 Mrd. USD zu senken und Nvidia-Abhängigkeit zu reduzieren."
     ],
-    "trend": "Vertikale Integration: Die gesamte KI-Branche – von Hyperscalern bis zu Laboren – strebt nach Kontrolle über den kompletten Stack, von eigenen Chips und Cloud-Infrastruktur über Modelle bis hin zum direkten Kundenzugang, um Abhängigkeiten zu reduzieren und Margen zu sichern.",
-    "watch": "Ob kleinere KI-Anbieter und Startups unter dem Druck der nun vertikal integrierten Giganten (Meta Cloud, Microsoft Frontier, OpenAI-Chip) an Boden verlieren oder ob der Robotik- und World-Model-Boom eine neue, offenere Plattformebene schafft, auf der sich neue Player etablieren können.",
-    "generatedAt": "2026-07-05T09:13:33.618Z"
+    "trend": "Vertikale Integration und Unabhängigkeit: Führende KI-Unternehmen streben gleichzeitig nach eigenem Kapital über die Börse und nach eigener Hardware-Infrastruktur, um Kosten zu kontrollieren und strategische Abhängigkeiten zu reduzieren – während Regulatoren in der EU beginnen, dieses Wachstum aktiv einzuhegen.",
+    "watch": "Der Launch von Google Gemini 3.5 Pro am 17. Juli wird als erster echter Benchmark-Test für die neue Frontier-Modell-Generation gelten – Benchmarks gegen GPT-5.6 und Fable 5 dürften unmittelbar die Marktdynamik und die Bewertungen im Vorfeld der anstehenden IPOs beeinflussen.",
+    "generatedAt": "2026-07-15T21:39:30.260Z"
   },
   "finanzen": {
-    "summary": "Eine ereignisreiche Finanzwoche stand im Zeichen sinkender Zinshoffnungen, historischer Börsengänge und geopolitischer Entspannung. Der DAX erklomm mit 25.655 Punkten ein neues Allzeithoch, nachdem schwache US-Jobdaten Spekulationen auf eine Fed-Zinspause anheizten. Gleichzeitig sorgte SpaceX mit seiner Nasdaq-100-Aufnahme für Aufsehen, während der Ölpreis durch die Entspannung an der Straße von Hormus auf ein Vorkriegsniveau absackte. Bitcoin hingegen verdaute weiter das schwächste Halbjahr seit Jahren, auch wenn schwache US-Arbeitsmarktdaten kurzfristig für einen Kursanstieg sorgten.",
+    "summary": "Eine ereignisreiche Woche an den Finanzmärkten: JPMorgan eröffnete die Earnings-Saison mit einem Rekordgewinn, während TSMC den anhaltenden KI-Boom in beeindruckende Zahlen ummünzte. Gleichzeitig sorgten die Zentralbanken für Bewegung – die EZB hob erstmals seit 2023 die Zinsen an, und die Fed deutete via Dot Plot eine mögliche Trendwende in Richtung Erhöhung an. Geopolitische Spannungen im Nahen Osten trieben Gold über die 4.000-Dollar-Marke und Öl auf 85 USD, was den Inflationsdruck weiter anfacht. Bitcoin erholte sich von einem 21-Monats-Tief, bleibt aber in einem gespaltenen Marktumfeld fragil.",
     "highlights": [
-      "DAX auf Allzeithoch bei 25.655 Punkten – schwache US-Jobdaten (57.000 statt 115.000 erwartet) schüren Hoffnung auf Fed-Zinspause",
-      "SpaceX tritt am 7. Juli dem Nasdaq-100 bei – nach dem größten Börsengang der Geschichte (75 Mrd. USD) erwartet J.P. Morgan passive ETF-Käufe von 4,3 Mrd. USD",
-      "EZB hebt Leitzins erstmals seit 2023 auf 2,25 % an – Iran-bedingte Inflation treibt Teuerung im Euroraum auf rund 3,0 %",
-      "Ölpreis fällt auf 68–71 USD/Barrel – Wiedereröffnung der Hormus-Route und steigende VAE-Exporte schaffen Überangebot",
-      "Bitcoin beendet erstes Halbjahr 2026 mit -20 % im Juni und Rekordabflüssen aus Spot-ETFs von 4,5 Mrd. USD"
+      "JPMorgan übertraf mit einem Quartalsgewinn von 16,9 Mrd. USD und einem Umsatz von 58,02 Mrd. USD alle Erwartungen deutlich und setzte damit ein starkes Zeichen für den US-Bankensektor.",
+      "TSMC steigerte seinen Q2-Umsatz um 36 % auf rund 1,27 Billionen Taiwan-Dollar – ein klares Signal für den ungebremsten Hunger der Industrie nach KI-Chips.",
+      "Die EZB erhöhte erstmals seit September 2023 den Leitzins auf 2,25 %, ausgelöst durch auf 3,2 % gestiegene Inflation infolge des Nahost-Konflikts.",
+      "Gold überschritt die psychologisch wichtige Marke von 4.000 USD je Feinunze, Brent-Öl kletterte auf über 85 USD – beides befeuert durch Eskalationen am Persischen Golf.",
+      "Bitcoin erholte sich von 57.950 USD auf rund 64.700 USD, nachdem US-Inflationsdaten positiv überraschten, doch Rekordabflüsse aus Bitcoin-ETFs von 4,5 Mrd. USD im Juni trüben das Bild."
     ],
-    "trend": "Divergierende Geldpolitik trifft geopolitische Entspannung: Während die EZB die Zinsschraube anzieht und die Fed vorsichtig auf eine mögliche Erhöhung hindeutet, entlasten sinkende Ölpreise und schwache US-Arbeitsmarktdaten die Märkte – mit dem Nettoeffekt steigender Risikobereitschaft bei Aktien und Druck auf Krypto und Rohstoffe.",
-    "watch": "Die nächste EZB-Sitzung am 23. Juli sowie weitere US-Wirtschaftsdaten werden entscheidend sein: Bestätigt sich die Abschwächung am US-Arbeitsmarkt, könnte die Fed ihre Zinserhöhungspläne auf Eis legen – mit weitreichenden Folgen für DAX, Bitcoin und den Eurokurs.",
-    "generatedAt": "2026-07-05T09:13:48.484Z"
+    "trend": "Inflation und geopolitische Risiken dominieren das Marktgeschehen: Steigende Energiepreise durch Nahost-Spannungen, restriktivere Zentralbanken auf beiden Seiten des Atlantiks und ein boomender KI-Sektor prägen gleichzeitig das globale Finanzumfeld – ein Spannungsfeld zwischen Wachstumsdynamik und geldpolitischer Straffung.",
+    "watch": "Im Fokus steht die FOMC-Sitzung am 28./29. Juli: Sollte die Fed tatsächlich eine Zinserhöhung signalisieren oder vollziehen, dürfte das erhebliche Auswirkungen auf Aktien-, Anleihe- und Kryptomärkte haben. Zusätzlich bleibt die EZB-Sitzung am 23. Juli ein wichtiger Termin, da eine weitere Erhöhung auf 2,50 % möglich erscheint.",
+    "generatedAt": "2026-07-15T21:39:46.044Z"
   }
 }
