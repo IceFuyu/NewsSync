@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "NewSync – privates News-Dashboard für KI und Finanzen. Statische Seite, News werden per GitHub Actions Cron aktualisiert.",
+  "description": "NewSync – privates News-Dashboard für KI und Finanzen. Statische Seite, News werden aus RSS-Feeds geholt und per GitHub Actions manuell aktualisiert.",
   "scripts": {
-    "generate-news": "node scripts/generate-news.js"
+    "generate-news": "node scripts/generate-news.js",
+    "dry-run": "node scripts/generate-news.js --dry-run"
   }
 }

@@ -463,7 +463,7 @@
       </section>
 
       <footer>
-        NewSync ist ein privater Prototyp. Inhalte werden automatisch recherchiert und von Claude erzeugt und mehrmals täglich aktualisiert — Wichtiges bitte an der Originalquelle prüfen.
+        NewSync ist ein privater Prototyp. Meldungen stammen aus den RSS-Feeds der genannten Quellen; Auswahl, Übersetzung und Einordnung werden von Claude erzeugt. Der Feed wird manuell aktualisiert — Wichtiges bitte an der Originalquelle prüfen.
       </footer>
     </main>
 
@@ -902,7 +902,7 @@ function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&'
    DATA LOADING
    Die Seite macht selbst KEINE Anthropic-API-Aufrufe mehr.
    Ein separates Server-Skript (scripts/generate-news.js) erzeugt
-   per Cron news.json / archive.json / weekly-review.json — die
+   per GitHub Actions news.json / archive.json / weekly-review.json — die
    Seite liest hier nur noch diese statischen Dateien.
    ============================================================ */
 async function fetchJSON(path){
