@@ -1,1 +1,28 @@
-{}
+{
+  "ki": {
+    "summary": "Die KI-Woche war geprägt von regulatorischen Weichenstellungen, Model-Releases und milliardenschweren Kapitalmärkten. Mit der bevorstehenden Vollgeltung des EU AI Acts ab 2. August 2026 und dem deutschen KI-MIG wurden die Spielregeln für KI in Europa konkretisiert, während gleichzeitig OpenAI und Anthropic ihre Börsengänge vorbereiten. Auf der Modellseite erschienen GPT-5.6 und Leanstral 1.5, und Google lieferte mit Gemini 3.5 Live Translate einen praktischen Durchbruch bei Echtzeit-Sprachübersetzung. TSMC-Rekordquartale und Anthropics Chip-Gespräche mit Samsung zeigen, dass der Wettlauf um Inferenz-Kapazität längst die Hardware-Ebene erreicht hat.",
+    "highlights": [
+      "OpenAI reichte vertraulich einen S-1 bei der SEC ein und strebt eine Bewertung von bis zu 1 Billion USD an – Rivale Anthropic plant seinen Börsengang für Oktober 2026, ein historischer KI-Doppel-IPO zeichnet sich ab.",
+      "GPT-5.6 wurde nach erstmals staatlich koordinierter US-Regierungsprüfung global in drei Varianten freigegeben, Gemini 3.5 Pro folgt am 17. Juli mit 2-Mio.-Token-Kontextfenster – das Frontier-Modell-Rennen läuft auf Hochtouren.",
+      "Der Bundesrat verabschiedete das KI-MIG und machte die Bundesnetzagentur zur zentralen KI-Aufsichtsbehörde; ab 2. August 2026 greifen die Kernpflichten des EU AI Acts mit Bußgeldern bis 35 Millionen Euro.",
+      "Mistral veröffentlichte Leanstral 1.5 als Open-Source-Verifikationsmodell unter Apache 2.0 – es erreichte 100 % auf miniF2F und fand dabei fünf reale Sicherheitslücken in öffentlichen Repositories.",
+      "Anthropic verhandelt mit Samsung über eigene Inferenz-Chips, um seine monatliche Compute-Rechnung von 1,25 Mrd. USD zu senken – parallel wechselte Star-Forscher Andrej Karpathy von Eureka Labs ins Anthropic-Pre-Training-Team."
+    ],
+    "trend": "Konvergenz von Regulierung und Kapitalmarkt: KI-Unternehmen stehen gleichzeitig vor dem Druck der EU-Compliance, staatlicher Modell-Freigabeprüfungen und dem Wettlauf um Börsenbewertungen – Governance und Geschäftsstrategie sind nicht mehr trennbar.",
+    "watch": "Der Launch von Gemini 3.5 Pro am 17. Juli und der direkte Benchmark-Vergleich mit GPT-5.6 Sol werden zeigen, wer im Frontier-Segment die Führung übernimmt – zugleich sollte man verfolgen, ob OpenAI oder Anthropic zuerst ihr IPO-Datum offiziell bestätigen.",
+    "generatedAt": "2026-07-16T20:48:56.819Z"
+  },
+  "finanzen": {
+    "summary": "Eine turbulente Finanzwoche stand im Zeichen geopolitischer Spannungen, starker Unternehmensberichte und geldpolitischer Weichenstellungen. Der Iran-Konflikt trieb Öl- und Goldpreise auf Monatshochs und belastete die Aktienmärkte, während JPMorgan, TSMC, ASML und BASF mit starken Quartalszahlen überzeugten. Die EZB erhöhte erstmals seit 2023 die Zinsen, und die Fed deutet unter dem neuen Vorsitzenden Kevin Warsh erstmals eine mögliche Erhöhung statt Senkung an. Bitcoin erholte sich nach einem 21-Monats-Tief, und das potenzielle Stripe-Advent-Übernahmeangebot für PayPal sorgte für den größten Fintech-Deal-Paukenschlag seit Jahren.",
+    "highlights": [
+      "JPMorgan erzielt mit 16,9 Mrd. USD Rekordgewinn und eröffnet die Earnings-Saison mit einem deutlichen Überraschungseffekt nach oben.",
+      "EZB hebt Leitzins erstmals seit September 2023 auf 2,25 % an – weitere Erhöhung auf der Sitzung am 23. Juli gilt als wahrscheinlich.",
+      "Brent-Öl klettert auf über 87 USD und Gold überschreitet 4.000 USD-Marke, befeuert durch Iran-Eskalation und Spannungen an der Straße von Hormus.",
+      "Stripe und Advent International legen ein 53-Milliarden-Dollar-Übernahmeangebot für PayPal vor – ein potenziell historischer Fintech-Deal mit 28 % Aufschlag.",
+      "Bitcoin erholt sich von 57.950 USD auf rund 65.000 USD, bleibt aber angesichts rekordhoher ETF-Abflüsse im Juni und unbestätigter Trendwende volatil."
+    ],
+    "trend": "Stagflationsangst als dominantes Marktthema: Steigende Energie- und Rohstoffpreise durch geopolitische Eskalation erhöhen den Inflationsdruck, zwingen EZB und Fed zu restriktiver Haltung und verdrängen Hoffnungen auf Zinssenkungen – mit gleichzeitig belasteten Aktien- und Anleihemärkten.",
+    "watch": "Die EZB-Sitzung am 23. Juli ist der nächste große Katalysator – eine weitere Zinserhöhung auf 2,50 % gilt als möglich. Parallel bleibt die FOMC-Sitzung vom 28./29. Juli im Fokus, da Fed-Chef Warsh mit restriktiver Rhetorik die Märkte bereits unter Druck setzt. Auch die Entwicklung der Iran-Krise und ihrer Auswirkungen auf den Ölpreis sollte eng beobachtet werden.",
+    "generatedAt": "2026-07-16T20:49:12.905Z"
+  }
+}
