@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rosengarten Café Pomologie – Reutlingen</title>
+<meta name="description" content="Rosengarten Café in der Pomologie Reutlingen – Café, Events &amp; Catering mitten im Grünen. Kaffee, Kuchen, warme Speisen, Cocktails und Live-Musik bei freiem Eintritt.">
+<style>
+  :root {
+    --green-dark: #2e4a34;
+    --green: #4a7053;
+    --green-light: #eef4ee;
+    --rose: #c25b6e;
+    --rose-dark: #a34255;
+    --rose-light: #fbeef0;
+    --cream: #faf6ef;
+    --ink: #2b2a26;
+    --ink-soft: #6b675e;
+    --card: #ffffff;
+    --line: #e6e0d4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.65;
+  }
+
+  .sans { font-family: 'Helvetica Neue', Arial, sans-serif; }
+
+  /* ---------- Navigation ---------- */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(250, 246, 239, 0.94);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .nav-brand {
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: var(--green-dark);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+  }
+  .nav-brand .rose-dot { color: var(--rose); }
+  .nav-links {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .nav-links a:hover { color: var(--rose-dark); }
+
+  /* ---------- Hero ---------- */
+  header.hero {
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(194, 91, 110, 0.12), transparent 55%),
+      radial-gradient(ellipse at 85% 75%, rgba(74, 112, 83, 0.16), transparent 55%),
+      linear-gradient(175deg, #f3efe4 0%, var(--cream) 70%);
+    text-align: center;
+    padding: 5.5rem 1.2rem 4.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-kicker {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--green);
+    margin-bottom: 1.2rem;
+  }
+  header.hero h1 {
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
+    color: var(--green-dark);
+    font-weight: normal;
+    line-height: 1.15;
+  }
+  header.hero h1 em {
+    font-style: italic;
+    color: var(--rose-dark);
+  }
+  .hero-sub {
+    max-width: 34rem;
+    margin: 1.4rem auto 0;
+    color: var(--ink-soft);
+    font-size: 1.1rem;
+  }
+  .hero-facts {
+    margin-top: 2.2rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .fact-pill {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.82rem;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.4rem 0.95rem;
+    color: var(--ink-soft);
+  }
+  .fact-pill strong { color: var(--green-dark); font-weight: 600; }
+  .hero-cta {
+    margin-top: 2.4rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.6rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary {
+    background: var(--rose);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(194, 91, 110, 0.35);
+  }
+  .btn-primary:hover { background: var(--rose-dark); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--green-dark);
+    border: 1px solid var(--green);
+  }
+  .btn-secondary:hover { background: var(--green-light); }
+
+  /* ---------- Sections ---------- */
+  main { max-width: 1000px; margin: 0 auto; padding: 0 1.2rem; }
+
+  section { padding: 4rem 0 1rem; }
+
+  .section-kicker {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--rose-dark);
+    margin-bottom: 0.5rem;
+  }
+  section h2 {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    color: var(--green-dark);
+    font-weight: normal;
+    margin-bottom: 1.2rem;
+  }
+  .lead {
+    max-width: 40rem;
+    color: var(--ink-soft);
+    margin-bottom: 2rem;
+  }
+
+  /* Über uns */
+  .about-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.2rem;
+  }
+  .about-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.6rem 1.5rem;
+  }
+  .about-card .icon {
+    font-size: 1.6rem;
+    display: block;
+    margin-bottom: 0.7rem;
+  }
+  .about-card h3 {
+    font-size: 1.1rem;
+    color: var(--green-dark);
+    margin-bottom: 0.4rem;
+    font-weight: bold;
+  }
+  .about-card p { font-size: 0.95rem; color: var(--ink-soft); }
+
+  /* Speisekarte */
+  .menu-wrap {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 2rem 1.8rem;
+  }
+  .menu-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2rem;
+  }
+  .menu-group h3 {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--rose-dark);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.9rem;
+  }
+  .menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.8rem;
+    padding: 0.42rem 0;
+  }
+  .menu-item .name { color: var(--ink); }
+  .menu-item .name small {
+    display: block;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+  .menu-item .dots {
+    flex: 1;
+    border-bottom: 1px dotted var(--line);
+    transform: translateY(-4px);
+  }
+  .menu-item .price {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.92rem;
+    color: var(--green-dark);
+    white-space: nowrap;
+  }
+  .menu-note {
+    margin-top: 1.6rem;
+    font-size: 0.88rem;
+    font-style: italic;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  /* Events */
+  .events-band {
+    background: var(--green-dark);
+    color: #f4f1e8;
+    border-radius: 16px;
+    padding: 2.4rem 2rem;
+  }
+  .events-band .section-kicker { color: #e8b7c1; }
+  .events-band h2 { color: #fff; }
+  .events-band .lead { color: #cfd8cc; margin-bottom: 1.6rem; }
+  .event-list { list-style: none; }
+  .event-list li {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .event-list li:last-child { border-bottom: none; }
+  .event-list .mark { color: #e8b7c1; font-size: 1.1rem; line-height: 1.5; }
+  .event-list strong { color: #fff; }
+  .event-list span.desc { color: #cfd8cc; font-size: 0.95rem; display: block; }
+  .free-badge {
+    display: inline-block;
+    margin-top: 1.4rem;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(232, 183, 193, 0.15);
+    border: 1px solid rgba(232, 183, 193, 0.5);
+    color: #e8b7c1;
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+  }
+
+  /* Kontakt */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.2rem;
+  }
+  .contact-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.5rem;
+  }
+  .contact-card h3 {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--rose-dark);
+    margin-bottom: 0.7rem;
+  }
+  .contact-card p, .contact-card a { color: var(--ink); font-size: 1rem; }
+  .contact-card a { color: var(--green-dark); text-decoration: underline; text-underline-offset: 3px; }
+  .contact-card a:hover { color: var(--rose-dark); }
+  .contact-card .muted { color: var(--ink-soft); font-size: 0.88rem; font-style: italic; margin-top: 0.5rem; }
+
+  /* Footer */
+  footer {
+    margin-top: 4rem;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    padding: 2rem 1.2rem 2.5rem;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  footer .roses { font-size: 1.1rem; letter-spacing: 0.4em; margin-bottom: 0.6rem; }
+
+  @media (max-width: 560px) {
+    header.hero { padding: 3.5rem 1.2rem 3rem; }
+    section { padding: 3rem 0 0.5rem; }
+    .events-band { padding: 1.8rem 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="#top">Rosengarten Café <span class="rose-dot">✿</span></a>
+    <div class="nav-links">
+      <a href="#ueber">Über uns</a>
+      <a href="#speisekarte">Speisekarte</a>
+      <a href="#events">Events</a>
+      <a href="#kontakt">Kontakt</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <p class="hero-kicker">Café · Events · Catering</p>
+  <h1>Rosengarten Café<br><em>in der Pomologie</em></h1>
+  <p class="hero-sub">
+    Verweilen inmitten eines blühenden Gartens – Kaffee, Kuchen, warme Speisen
+    und Live-Musik unter freiem Himmel, mitten im Grünen von Reutlingen.
+  </p>
+  <div class="hero-facts">
+    <span class="fact-pill">⭐ <strong>4,0</strong> bei Google (134 Bewertungen)</span>
+    <span class="fact-pill">💶 <strong>1–10 €</strong> pro Person</span>
+    <span class="fact-pill">🎶 Live-Musik bei <strong>freiem Eintritt</strong></span>
+    <span class="fact-pill">🌳 <strong>Gartenplätze</strong> mitten im Park</span>
+    <span class="fact-pill">👨‍👩‍👧 <strong>Spielwiese</strong> für Kinder nebenan</span>
+  </div>
+  <div class="hero-cta">
+    <a class="btn btn-primary" href="#speisekarte">Zur Speisekarte</a>
+    <a class="btn btn-secondary" href="#kontakt">Anfahrt &amp; Kontakt</a>
+  </div>
+</header>
+
+<main>
+
+  <section id="ueber">
+    <p class="section-kicker">Willkommen</p>
+    <h2>Ein Café mitten im Grünen</h2>
+    <p class="lead">
+      Der Rosengarten in der Pomologie – dem historischen Stadtpark von Reutlingen –
+      ist ein beliebtes Gartencafé und Veranstaltungsort im Herzen des Parks.
+      Alle Plätze liegen unter freiem Himmel zwischen den Rosenbeeten, und auf der
+      Wiese direkt nebenan können sich Kinder auf den Spielgeräten austoben,
+      während die Eltern in Ruhe ihren Kaffee genießen.
+    </p>
+    <div class="about-grid">
+      <div class="about-card">
+        <span class="icon">🥐</span>
+        <h3>Frühstück &amp; Brunch</h3>
+        <p>Reichhaltiges Frühstück im Grünen – von Gästen ausdrücklich gelobt. Der perfekte Start in einen Tag im Park.</p>
+      </div>
+      <div class="about-card">
+        <span class="icon">☕</span>
+        <h3>Kaffee, Kuchen &amp; Eis</h3>
+        <p>Köstliche Kuchen, ein prima Espresso und an warmen Tagen Eis – am schönsten genossen zwischen den Rosen.</p>
+      </div>
+      <div class="about-card">
+        <span class="icon">🍽️</span>
+        <h3>Warme Speisen</h3>
+        <p>Herzhafte Klassiker von der Currywurst über Burger bis zum Flammkuchen – unkompliziert, frisch und für jeden Geldbeutel.</p>
+      </div>
+      <div class="about-card">
+        <span class="icon">🍹</span>
+        <h3>Cocktails &amp; Kaltgetränke</h3>
+        <p>An warmen Tagen gibt es erfrischende Cocktails und kalte Getränke – perfekt für laue Sommerabende im Park.</p>
+      </div>
+      <div class="about-card">
+        <span class="icon">🎠</span>
+        <h3>Familienfreundlich</h3>
+        <p>Spielgeräte auf der Wiese direkt am Café – die Kinder spielen in Sichtweite, die Großen entspannen.</p>
+      </div>
+      <div class="about-card">
+        <span class="icon">🎉</span>
+        <h3>Events &amp; Catering</h3>
+        <p>Live-Musik, Open-Air-Veranstaltungen und Catering für Ihren Anlass – sprechen Sie uns einfach an.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="speisekarte">
+    <p class="section-kicker">Speisekarte</p>
+    <h2>Ein Auszug aus unserer Karte</h2>
+    <div class="menu-wrap">
+      <div class="menu-columns">
+        <div class="menu-group">
+          <h3>Herzhaftes</h3>
+          <div class="menu-item">
+            <span class="name">Hamburger</span>
+            <span class="dots"></span>
+            <span class="price">4,00 €</span>
+          </div>
+          <div class="menu-item">
+            <span class="name">Cheeseburger</span>
+            <span class="dots"></span>
+            <span class="price">4,50 €</span>
+          </div>
+          <div class="menu-item">
+            <span class="name">Currywurst Spezial <small>mit Brötchen</small></span>
+            <span class="dots"></span>
+            <span class="price">5,00 €</span>
+          </div>
+          <div class="menu-item">
+            <span class="name">Hamburgerteller <small>Hamburger mit Pommes</small></span>
+            <span class="dots"></span>
+            <span class="price">7,50 €</span>
+          </div>
+          <div class="menu-item">
+            <span class="name">Cheeseburgerteller <small>Cheeseburger mit Pommes</small></span>
+            <span class="dots"></span>
+            <span class="price">8,00 €</span>
+          </div>
+          <div class="menu-item">
+            <span class="name">Flammkuchen <small>nach Tagesangebot</small></span>
+            <span class="dots"></span>
+            <span class="price">tagesaktuell</span>
+          </div>
+        </div>
+        <div class="menu-group">
+          <h3>Beilagen, Süsses &amp; Mehr</h3>
+          <div class="menu-item">
+            <span class="name">Portion Pommes</span>
+            <span class="dots"></span>
+            <span class="price">4,50 €</span>
+          </div>
+          <div class="menu-item">
+            <span class="name">Pommesteller</span>
+            <span class="dots"></span>
+            <span class="price">8,00 €</span>
+          </div>
+          <div class="menu-item">
+            <span class="name">Frühstück &amp; Brunch <small>reichhaltig, im Grünen serviert</small></span>
+            <span class="dots"></span>
+            <span class="price">tagesaktuell</span>
+          </div>
+          <div class="menu-item">
+            <span class="name">Kuchen &amp; Kaffee <small>wechselndes Tagesangebot</small></span>
+            <span class="dots"></span>
+            <span class="price">tagesaktuell</span>
+          </div>
+          <div class="menu-item">
+            <span class="name">Eis, Cocktails &amp; kalte Getränke <small>siehe Getränkekarte</small></span>
+            <span class="dots"></span>
+            <span class="price">tagesaktuell</span>
+          </div>
+        </div>
+      </div>
+      <p class="menu-note">
+        Kleiner Auszug – die vollständige, aktuelle Speisekarte finden Sie vor Ort
+        oder auf <a href="https://www.rosengarten-reutlingen.de" target="_blank" rel="noopener">rosengarten-reutlingen.de</a>.
+      </p>
+    </div>
+  </section>
+
+  <section id="events">
+    <div class="events-band">
+      <p class="section-kicker">Veranstaltungen</p>
+      <h2>Musik &amp; Kultur im Park</h2>
+      <p class="lead">
+        Der Rosengarten ist fester Bestandteil des Reutlinger „Programm im Park“ –
+        mit Konzerten, Lesungen und Open-Air-Events direkt in der Pomologie.
+      </p>
+      <ul class="event-list">
+        <li>
+          <span class="mark">✿</span>
+          <div>
+            <strong>Nächster Termin: Tante Friedas Jazzkränzchen</strong>
+            <span class="desc">Samstag, 01.08.2026, ab 15 Uhr im Rosengarten – der Jazz lebt, Eintritt frei.</span>
+          </div>
+        </li>
+        <li>
+          <span class="mark">✿</span>
+          <div>
+            <strong>Programm im Park 2026</strong>
+            <span class="desc">Den ganzen Sommer über Konzerte, Lesungen, Kindertheater und Mitmach-Angebote in der Pomologie – von Blues und Rock'n'Roll bis Tai-Chi am Morgen. Alle Termine im Veranstaltungskalender der Stadt Reutlingen.</span>
+          </div>
+        </li>
+        <li>
+          <span class="mark">✿</span>
+          <div>
+            <strong>Catering &amp; private Feiern</strong>
+            <span class="desc">Ob Geburtstag oder Firmenfeier – wir machen Ihren Anlass im Grünen möglich. Anfragen gerne telefonisch oder per Instagram.</span>
+          </div>
+        </li>
+      </ul>
+      <span class="free-badge">Eintritt frei bei Open-Air-Events</span>
+    </div>
+  </section>
+
+  <section id="kontakt">
+    <p class="section-kicker">Besuchen Sie uns</p>
+    <h2>Kontakt &amp; Anfahrt</h2>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <h3>Adresse</h3>
+        <p>Rosengarten Café Pomologie<br>
+        Friedrich-Ebert-Straße 12<br>
+        72762 Reutlingen</p>
+        <p class="muted">Mitten in der Pomologie – dem historischen Park von Reutlingen.</p>
+      </div>
+      <div class="contact-card">
+        <h3>Kontakt</h3>
+        <p>Telefon: <a href="tel:+4915129000819">01512 9000819</a></p>
+        <p>Instagram: <a href="https://www.instagram.com/rosengartencafe.rt" target="_blank" rel="noopener">@rosengartencafe.rt</a></p>
+        <p>Web: <a href="https://www.rosengarten-reutlingen.de" target="_blank" rel="noopener">rosengarten-reutlingen.de</a></p>
+      </div>
+      <div class="contact-card">
+        <h3>Öffnungszeiten</h3>
+        <p>Saisonal geöffnet – von Frühjahr bis Herbst, montags ab 14:00 Uhr.</p>
+        <p class="muted">Als reines Gartencafé sind wir wetterabhängig geöffnet. Die tagesaktuellen Zeiten finden Sie bei Google oder auf unserem Instagram-Profil.</p>
+      </div>
+      <div class="contact-card">
+        <h3>Gut zu wissen</h3>
+        <p>Alle Plätze liegen im Freien – mitten im Rosengarten der Pomologie.</p>
+        <p class="muted">Spielgeräte für Kinder direkt auf der Wiese am Café. Der Park ist öffentlich und der Eintritt frei – ideal für einen Spaziergang vor dem Kaffee.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="roses">✿ ✿ ✿</div>
+  <p>Rosengarten Café Pomologie · Friedrich-Ebert-Straße 12 · 72762 Reutlingen</p>
+  <p>Café · Events · Catering</p>
+</footer>
+
+</body>
+</html>
